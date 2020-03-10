@@ -6,7 +6,7 @@ Themes are defined by theme.toml file. Theme file consists of tow main component
 ```toml
 [global]
 name = "mytheme"
-dependencies = ["polybar", "dunst"]
+dependencies = ["polybar", "dunst"]  # Used to check if required packages are installed in the system
 
 # task.program_name.up sets up the program. The following section will spawn `polybar mybar`
 [task.polybar.up]
@@ -29,13 +29,41 @@ args = ["--config", "configs/dunstrc"]
 
 ## Usage
 
+To install a theme, simply do:
+```bash
+leftwm-theme install theme_url
+```
+where `theme_url` is a git url with `theme.toml` file in the root directory.
+If you wish to install local theme, use _--path_ flag instead.
+
+Themes can be applied via:
+```bash
+leftwm-theme apply theme_name
+```
+
+To undo the previous application of the theme, run:
+```bash
+leftwm-theme undo
+```
+
+As you have guessed, uninstalling a theme is just
+```bash
+leftwm-theme uninstall theme_name
+```
+
+Status of currently active theme as well as installed theme can be viewed by:
+```bash
+leftwm-theme status
+```
+
 
 ## Roadmap
 
-- [ ] Cli with argument and basic theme.toml parsing 
+- [ ] Cli application with argument and basic theme.toml parsing 
 - [ ] Validation of theme.toml
 - [ ] Implement tasks(up, down) along with task dependencies.
 - [ ] Git integration
+- [ ] Provision for name aliases for dependencies in different distros.
 
 
 ## License
