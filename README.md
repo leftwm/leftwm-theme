@@ -1,7 +1,7 @@
 # leftwm-theme
 A tool to help manage themes for LeftWM
 
-Themes are defined by theme.toml file. Theme file consists of tow main components: global values which includes theme name, it's dependencies and optionally environment variables. The second component is task. Each task performs the setup and teardown for each of the dependencies specified. Below is a minimal example of `theme.toml`:
+Themes are defined by theme.toml file. Theme file consists of two main components: global values which includes theme name, it's dependencies and optionally environment variables. The second component is task. Each task performs the setup and teardown for each of the dependencies specified. Below is a minimal example of `theme.toml`:
 
 ```toml
 [global]

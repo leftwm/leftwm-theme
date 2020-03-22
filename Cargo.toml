@@ -3,7 +3,10 @@ name = "leftwm-theme"
 version = "0.1.0"
 authors = ["Hitesh Paul <git@hiteshpaul.com>"]
 edition = "2018"
+description = "A theme manager for the leftwm window manager"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+log = "0.4.8"
+clap = { git = "https://github.com/clap-rs/clap/", features=["derive"] }
