@@ -30,7 +30,7 @@ pub fn add(args: &ArgMatches) -> Result<(), errors::LeftError> {
                         "{}{}{}{}{}{}",
                         "Downloaded theme ".green().bold(),
                         &themename.cyan(),
-                        ". \nTo set as default, use ",
+                        ". \nTo set as default, use ".green().bold(),
                         "leftwm-theme set \"".cyan(),
                         &themename.cyan(),
                         "\"".cyan()

@@ -22,41 +22,39 @@ pub fn update(_args: &ArgMatches) -> Result<(), errors::LeftError> {
             Some(true) => "Current: ".magenta().bold(),
             _ => "".white(),
         };
-        match config.theme[x].directory {
-            Some(_) => {
-                println!(
-                    "    Updating . . . {}{}: {}",
-                    current,
-                    config.theme[x].name,
-                    config.theme[x]
-                        .description
-                        .as_ref()
-                        .unwrap_or(&"A LeftWM theme".to_string())
-                );
-                let repo = Repository::open(config.theme[x].directory.clone()?)?;
-                match fetch_origin_main(&repo) {
-                    Ok(_) => {
-                        //if defined, attempt to checkout the specific index
-                        if config.theme[x].commit.is_some()
-                            && config.theme[x].commit.clone().unwrap_or("".to_string())
-                                != "*".to_string()
-                        {
-                            repo.set_head_detached(Oid::from_str(
-                                &config.theme[x].commit.as_ref()?,
-                            )?)?;
-                            repo.checkout_head(None)?;
-                        }
-                    }
-                    Err(e) => {
-                        trace!("Error: {:?}", e);
-                        error!("Could not fetch repo.");
+        if config.theme[x].directory.is_some() {
+            println!(
+                "    Updating . . . {}{}: {}",
+                current,
+                config.theme[x].name,
+                config.theme[x]
+                    .description
+                    .as_ref()
+                    .unwrap_or(&"A LeftWM theme".to_string())
+            );
+            let repo = Repository::open(config.theme[x].directory.clone()?)?;
+            match fetch_origin_main(&repo) {
+                Ok(_) => {
+                    //if defined, attempt to checkout the specific index
+                    if config.theme[x].commit.is_some()
+                        && config.theme[x]
+                            .commit
+                            .clone()
+                            .unwrap_or_else(|| "".to_string())
+                            != *"*"
+                    {
+                        repo.set_head_detached(Oid::from_str(&config.theme[x].commit.as_ref()?)?)?;
+                        repo.checkout_head(None)?;
                     }
                 }
-
-                installed += 1;
+                Err(e) => {
+                    trace!("Error: {:?}", e);
+                    error!("Could not fetch repo.");
+                }
             }
-            None => {}
-        };
+
+            installed += 1;
+        }
     }
     if installed == 0 {
         println!("{}", "No themes installed.".red().bold());

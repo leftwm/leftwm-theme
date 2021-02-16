@@ -19,9 +19,9 @@ pub struct TempThemes {
 impl Theme {
     pub fn new(name: String, description: Option<String>, directory: Option<String>) -> Self {
         Theme {
-            name: name,
-            description: description,
-            directory: directory,
+            name,
+            description,
+            directory,
             repository: None,
             commit: None,
             version: Some("0.0.0".to_string()),

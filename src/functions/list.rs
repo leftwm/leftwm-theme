@@ -11,21 +11,18 @@ pub fn list(_args: &ArgMatches) -> Result<(), errors::LeftError> {
             Some(true) => "Current: ".magenta().bold(),
             _ => "".white(),
         };
-        match config.theme[x].directory {
-            Some(_) => {
-                println!(
-                    "    {}{}: {}",
-                    current,
-                    config.theme[x].name,
-                    config.theme[x]
-                        .description
-                        .as_ref()
-                        .unwrap_or(&"A LeftWM theme".to_string())
-                );
-                installed += 1;
-            }
-            None => {}
-        };
+        if config.theme[x].directory.is_some() {
+            println!(
+                "    {}{}: {}",
+                current,
+                config.theme[x].name,
+                config.theme[x]
+                    .description
+                    .as_ref()
+                    .unwrap_or(&"A LeftWM theme".to_string())
+            );
+            installed += 1;
+        }
     }
     if installed == 0 {
         println!("{}", "No themes installed.".red().bold());

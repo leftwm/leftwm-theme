@@ -43,7 +43,7 @@ pub fn set(args: &ArgMatches) -> Result<(), errors::LeftError> {
                     &themename.green().bold(),
                     " as default theme.".blue().bold()
                 );
-                if !args.value_of("no-reset").is_some() {
+                if args.value_of("no-reset").is_none() {
                     println!("{}", "Reloading LeftWM".blue());
                     Command::new("pkill").arg("leftwm-worker").output()?;
                 }

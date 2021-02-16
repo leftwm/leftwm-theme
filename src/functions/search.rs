@@ -7,7 +7,7 @@ pub fn search(args: &ArgMatches) -> Result<(), errors::LeftError> {
     println!("{}", "Searching for themes . . . ".blue().bold());
     use crate::models::Config;
     let mut config = Config::load().unwrap_or_default();
-    if !args.value_of("cache").is_some() {
+    if args.value_of("cache").is_none() {
         //attempt to fetch new themes
         println!("    Retrieving themes from {:?}", &config.source());
         let resp = reqwest::blocking::get(&config.source())?.text_with_charset("utf-8")?;
