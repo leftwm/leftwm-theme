@@ -17,6 +17,20 @@ pub struct TempThemes {
 }
 
 impl Theme {
+    pub fn new(name: String, description: Option<String>, directory: Option<String>) -> Self {
+        Theme {
+            name: name,
+            description: description,
+            directory: directory,
+            repository: None,
+            commit: None,
+            version: Some("0.0.0".to_string()),
+            leftwm_versions: Some("*".to_string()),
+            dependencies: None,
+            current: Some(false),
+        }
+    }
+
     pub fn is_installed(&self) -> bool {
         match &self.directory {
             Some(_dir) => true,

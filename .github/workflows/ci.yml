@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -Dwarnings
+  RUSTDOCFLAGS: -Dwarnings
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: apt update
+      run: sudo apt update
+    - name: apt install libsystemd-dev
+      run: sudo apt install -y --no-install-recommends libsystemd-dev
+    - name: Build
+      run: cargo build --all-targets --all-features
+    - name: Run tests
+      run: cargo test --all-targets --all-features
+
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: apt update
+      run: sudo apt update
+    - name: apt install libsystemd-dev
+      run: sudo apt install -y --no-install-recommends libsystemd-dev
+    - name: Clippy
+      run: cargo clippy --all-targets --all-features
+
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Fmt
+      run: cargo fmt -- --check

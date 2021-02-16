@@ -6,7 +6,7 @@ pub mod errors;
 pub mod functions;
 pub mod models;
 
-use crate::functions::{add, list, remove, search, set, update};
+use crate::functions::{add, list, new, remove, search, set, update};
 use clap::{App, Arg, ArgMatches, SubCommand};
 use log::{error, info, trace};
 
@@ -103,7 +103,7 @@ fn main() {
                 .about("creates a new theme")
                 .version(version)
                 .arg(
-                    Arg::with_name("Name")
+                    Arg::with_name("THEME_NAME")
                         .help("The name of the theme or the Git repository containing the theme")
                         .required(true)
                         .index(1),
@@ -127,6 +127,9 @@ fn main() {
         }
         ("set", Some(sub_m)) => {
             dofn(sub_m, &set);
+        }
+        ("new", Some(sub_m)) => {
+            dofn(sub_m, &new);
         }
         ("search", Some(sub_m)) => {
             dofn(sub_m, &search);
