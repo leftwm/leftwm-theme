@@ -45,6 +45,8 @@ jobs:
         profile: minimal
         toolchain: nightly
         override: true
+    - name: Install Clippy
+      run: rustup component add clippy --toolchain nightly-x86_64-unknown-linux-gnu
     - name: Clippy
       run: cargo +nightly clippy --all-targets --all-features
 
