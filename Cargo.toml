@@ -1,0 +1,26 @@
+[package]
+name = "leftwm-theme"
+version = "0.0.1"
+authors = ["Mautamu <mautam@usa.com>"]
+description = "A theme mangager for LeftWM"
+edition = "2018"
+keywords = ["leftwm", "wm", "theme"]
+license = "MIT"
+repository = "https://github.com/leftwm/leftwm-theme"
+readme = "README.md"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = "2.33.0"
+reqwest = {version = "0.11.0", features= ["blocking", "json"]}
+dirs-next = "2.0.0"
+toml = "0.5.5"
+xdg = "2.2.0"
+serde = "1.0.104"
+serde_derive = "1.0.104"
+serde_json = "1.0.44"
+log = "0.4"
+pretty_env_logger = "0.4.0"
+colored = "2.0.0"
+git2 = "0.13.17"
