@@ -5,7 +5,7 @@ use colored::*;
 use git2::Repository;
 use log::{error, trace};
 use xdg::BaseDirectories;
-pub fn add(args: &ArgMatches) -> Result<(), errors::LeftError> {
+pub fn install(args: &ArgMatches) -> Result<(), errors::LeftError> {
     println!("{}", "Looking for theme . . . ".blue().bold());
     let mut config = Config::load().unwrap_or_default();
     trace!("{:?}", &config);

@@ -16,7 +16,7 @@ pub struct Config {
 impl Config {
     pub fn default() -> Self {
         let mut config = Config {
-            list_repo: String::from("https://raw.githubusercontent.com/mautamu/leftwm-community-themes/master/known.toml"),
+            list_repo: String::from("https://raw.githubusercontent.com/leftwm/leftwm-community-themes/master/known.toml"),
             theme: Vec::new(),
         };
         config.theme.push(Theme {

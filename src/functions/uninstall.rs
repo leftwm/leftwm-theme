@@ -6,15 +6,15 @@ use std::fs;
 use std::io;
 use std::path::Path;
 
-pub fn remove(args: &ArgMatches) -> Result<(), errors::LeftError> {
-    println!("{}", "Looking for theme to remove . . . ".blue().bold());
+pub fn uninstall(args: &ArgMatches) -> Result<(), errors::LeftError> {
+    println!("{}", "Looking for theme to uninstall . . . ".blue().bold());
     let mut config = Config::load().unwrap_or_default();
     let theme = Theme::find(&mut config.theme, args.value_of("TNAME")?.to_string())?;
     let path = Path::new(theme.directory.as_ref()?);
     let mut state: String;
     loop {
         println!(
-            "Are you sure you want to remove this theme, located at {} ? yes/no:",
+            "Are you sure you want to uninstall this theme, located at {} ? yes/no:",
             path.to_str()?
         );
         state = read_one().trim().to_uppercase();

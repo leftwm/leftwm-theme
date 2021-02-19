@@ -2,13 +2,19 @@ use crate::errors;
 use clap::ArgMatches;
 use colored::*;
 use log::{error, trace, warn};
+use std::env;
 use std::fs;
 use std::os::unix;
 use std::path::Path;
 use std::process::Command;
 use xdg::BaseDirectories;
 
-pub fn set(args: &ArgMatches) -> Result<(), errors::LeftError> {
+/* This function sets a particular theme as the current theme in ~./config/leftwm/themes/
+      Required args include "THEME", which defines the NAME of a theme as defined in a known.toml file or the themes.toml file in ~/.config/leftwm/
+          TODO: THEME (with the -g/git or -f/folder flags) may also point to a git url (in the future) with a defined theme.toml file with enough global parameters defined to embed the theme in themes.toml  
+      Possible optional args include debug, which prints all trace! commands, and no-reset, which prevents leftwm-theme from resetting the theme 
+ */
+pub fn apply(args: &ArgMatches) -> Result<(), errors::LeftError> {
     let themename = args.value_of("THEME")?;
     trace!("{:?}", &themename);
     use crate::models::{Config, Theme};
@@ -39,7 +45,7 @@ pub fn set(args: &ArgMatches) -> Result<(), errors::LeftError> {
                 unix::fs::symlink(path, dir)?;
                 println!(
                     "{}{}{}",
-                    "Set ".blue().bold(),
+                    "Apply ".blue().bold(),
                     &themename.green().bold(),
                     " as default theme.".blue().bold()
                 );
@@ -63,3 +69,5 @@ pub fn set(args: &ArgMatches) -> Result<(), errors::LeftError> {
         }
     }
 }
+
+

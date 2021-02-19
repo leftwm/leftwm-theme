@@ -1,15 +1,15 @@
-mod add;
+mod apply;
+mod install;
 mod list;
 mod new;
-mod remove;
-mod search;
-mod set;
 mod update;
+mod uninstall;
+mod upgrade;
 
-pub use add::add;
+pub use apply::apply;
+pub use install::install;
 pub use list::list;
 pub use new::new;
-pub use remove::remove;
-pub use search::search;
-pub use set::set;
 pub use update::update;
+pub use uninstall::uninstall;
+pub use upgrade::upgrade;

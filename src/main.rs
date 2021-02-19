@@ -6,7 +6,7 @@ pub mod errors;
 pub mod functions;
 pub mod models;
 
-use crate::functions::{add, list, new, remove, search, set, update};
+use crate::functions::{install, list, new, update, apply, uninstall, upgrade};
 use clap::{App, Arg, ArgMatches, SubCommand};
 use log::{error, info, trace};
 
@@ -26,7 +26,7 @@ fn main() {
         .arg(
             Arg::with_name("no-reset")
                 .short("n")
-                .help("prevents leftwm from restarting after setting new theme")
+                .help("prevents leftwm from restarting after applying new theme")
                 .required(false),
         )
         .subcommand(
@@ -35,7 +35,7 @@ fn main() {
                 .version(version),
         )
         .subcommand(
-            SubCommand::with_name("add")
+            SubCommand::with_name("install")
                 .about("downloads a theme")
                 .version(version)
                 .arg(
@@ -46,7 +46,7 @@ fn main() {
                 ),
         )
         .subcommand(
-            SubCommand::with_name("update")
+            SubCommand::with_name("upgrade")
                 .about("fetches updates to all themes")
                 .version(version)
                 .arg(
@@ -57,19 +57,19 @@ fn main() {
                 ),
         )
         .subcommand(
-            SubCommand::with_name("set")
-                .about("sets your current theme and restarts LeftWM")
+            SubCommand::with_name("apply")
+                .about("applies a theme and then restarts LeftWM")
                 .version(version)
                 .arg(
                     Arg::with_name("THEME")
-                        .help("the name of the theme to set as your current theme")
+                        .help("the name of the theme to apply as your current theme")
                         .required(true)
                         .index(1),
                 ),
         )
         .subcommand(
-            SubCommand::with_name("search")
-                .about("fetches a list of LeftWM themes and searches for new ones")
+            SubCommand::with_name("update")
+                .about("fetches LeftWM themes from provided sources and searches for new ones")
                 .version(version)
                 .arg(
                     Arg::with_name("cache")
@@ -88,8 +88,8 @@ fn main() {
                 .version(version),
         )
         .subcommand(
-            SubCommand::with_name("remove")
-                .about("removes an installed LeftWM theme")
+            SubCommand::with_name("uninstall")
+                .about("uninstalls an installed LeftWM theme")
                 .version(version)
                 .arg(
                     Arg::with_name("TNAME")
@@ -119,26 +119,26 @@ fn main() {
         ("check", Some(_sub_m)) => {
             dbg!("Not yet implemented");
         }
-        ("add", Some(sub_m)) => {
-            dofn(sub_m, &add);
+        ("install", Some(sub_m)) => {
+            dofn(sub_m, &install);
         }
-        ("update", Some(sub_m)) => {
-            dofn(sub_m, &update);
+        ("upgrade", Some(sub_m)) => {
+            dofn(sub_m, &upgrade);
         }
-        ("set", Some(sub_m)) => {
-            dofn(sub_m, &set);
+        ("apply", Some(sub_m)) => {
+            dofn(sub_m, &apply);
         }
         ("new", Some(sub_m)) => {
             dofn(sub_m, &new);
         }
-        ("search", Some(sub_m)) => {
-            dofn(sub_m, &search);
+        ("update", Some(sub_m)) => {
+            dofn(sub_m, &update);
         }
         ("list", Some(sub_m)) => {
             dofn(sub_m, &list);
         }
-        ("remove", Some(sub_m)) => {
-            dofn(sub_m, &remove);
+        ("uninstall", Some(sub_m)) => {
+            dofn(sub_m, &uninstall);
         }
         _ => {
             error!("No operation specified (use -h for help)");
