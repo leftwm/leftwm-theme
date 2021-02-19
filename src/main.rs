@@ -3,158 +3,64 @@
 extern crate serde_derive;
 
 pub mod errors;
-pub mod functions;
 pub mod models;
+pub mod operations;
 
-use crate::functions::{install, list, new, update, apply, uninstall, upgrade};
-use clap::{App, Arg, ArgMatches, SubCommand};
-use log::{error, info, trace};
+use crate::operations::{Apply, Install, List, New, Status, Uninstall, Update, Upgrade};
+use clap::Clap;
 
-fn main() {
-    pretty_env_logger::init();
-    // Initialize clap to determine arguments and call appropriate functions
-    let version = env!("CARGO_PKG_VERSION");
-    let matches = App::new("LeftWM Theme Manager")
-        .author("Lex Childs <lex.childs@gmail.com>")
-        .version(version)
-        .about("Manages LeftWM themes")
-        .arg(
-            Arg::with_name("debug")
-                .short("d")
-                .help("print debug information verbosely"),
-        )
-        .arg(
-            Arg::with_name("no-reset")
-                .short("n")
-                .help("prevents leftwm from restarting after applying new theme")
-                .required(false),
-        )
-        .subcommand(
-            SubCommand::with_name("check")
-                .about("checks whether a theme is installed correctly")
-                .version(version),
-        )
-        .subcommand(
-            SubCommand::with_name("install")
-                .about("downloads a theme")
-                .version(version)
-                .arg(
-                    Arg::with_name("Name")
-                        .help("The name of the theme or the Git repository containing the theme")
-                        .required(true)
-                        .index(1),
-                ),
-        )
-        .subcommand(
-            SubCommand::with_name("upgrade")
-                .about("fetches updates to all themes")
-                .version(version)
-                .arg(
-                    Arg::with_name("UTHEME")
-                        .help("the name of the theme to update")
-                        .required(false)
-                        .index(1),
-                ),
-        )
-        .subcommand(
-            SubCommand::with_name("apply")
-                .about("applies a theme and then restarts LeftWM")
-                .version(version)
-                .arg(
-                    Arg::with_name("THEME")
-                        .help("the name of the theme to apply as your current theme")
-                        .required(true)
-                        .index(1),
-                ),
-        )
-        .subcommand(
-            SubCommand::with_name("update")
-                .about("fetches LeftWM themes from provided sources and searches for new ones")
-                .version(version)
-                .arg(
-                    Arg::with_name("cache")
-                        .short("c")
-                        .help("search in cache only, don't fetch a new list"),
-                )                .arg(
-                    Arg::with_name("TERM")
-                        .help("retrieves only matching themes (still downloads list if not -c flagged)")
-                        .required(false)
-                        .index(1),
-                ),
-        )
-        .subcommand(
-            SubCommand::with_name("list")
-                .about("lists installed LeftWM themes")
-                .version(version),
-        )
-        .subcommand(
-            SubCommand::with_name("uninstall")
-                .about("uninstalls an installed LeftWM theme")
-                .version(version)
-                .arg(
-                    Arg::with_name("TNAME")
-                        .help("The name of the theme or the Git repository containing the theme")
-                        .required(true)
-                        .index(1),
-                ),
-        )
-        .subcommand(
-            SubCommand::with_name("new")
-                .about("creates a new theme")
-                .version(version)
-                .arg(
-                    Arg::with_name("THEME_NAME")
-                        .help("The name of the theme or the Git repository containing the theme")
-                        .required(true)
-                        .index(1),
-                ),
-        )
-        .get_matches();
-
-    if matches.value_of("debug").is_some() {
-        log::set_max_level(log::LevelFilter::Trace);
-    }
-
-    match matches.subcommand() {
-        ("check", Some(_sub_m)) => {
-            dbg!("Not yet implemented");
-        }
-        ("install", Some(sub_m)) => {
-            dofn(sub_m, &install);
-        }
-        ("upgrade", Some(sub_m)) => {
-            dofn(sub_m, &upgrade);
-        }
-        ("apply", Some(sub_m)) => {
-            dofn(sub_m, &apply);
-        }
-        ("new", Some(sub_m)) => {
-            dofn(sub_m, &new);
-        }
-        ("update", Some(sub_m)) => {
-            dofn(sub_m, &update);
-        }
-        ("list", Some(sub_m)) => {
-            dofn(sub_m, &list);
-        }
-        ("uninstall", Some(sub_m)) => {
-            dofn(sub_m, &uninstall);
-        }
-        _ => {
-            error!("No operation specified (use -h for help)");
-        }
-    }
+#[derive(Clap, Debug)]
+#[clap(author, about, version)]
+pub struct Opt {
+    /// Verbose mode (-v, -vv, -vvv, etc.)
+    #[clap(short, long, parse(from_occurrences))]
+    pub verbose: u8,
+    /// Operation to be performed by the theme manager
+    #[clap(subcommand)]
+    pub operation: Operation,
 }
 
-fn dofn(args: &ArgMatches, f: &dyn Fn(&ArgMatches) -> Result<(), errors::LeftError>) {
-    trace!("{}", "Running function . . . ");
-    match f(args) {
-        Ok(_) => {
-            info!("Completed successfully, exiting . . .");
-        }
-        Err(e) => {
-            trace!("{:?}", e);
-            error!("\nDid not complete successfully. Exiting.");
-        }
+#[derive(Clap, Debug)]
+pub enum Operation {
+    /// Install a theme
+    Install(Install),
+    /// Uninstall a theme
+    Uninstall(Uninstall),
+    /// List installed theme(s)
+    #[clap(name = "list")]
+    List(List),
+    /// Create new theme
+    New(New),
+    /// Update installed themes
+    Upgrade(Upgrade),
+    /// Update theme list
+    Update(Update),
+    /// Apply an already installed theme
+    Apply(Apply),
+    /// Print out current theme information
+    Status(Status),
+}
+
+fn main() -> Result<(), errors::LeftError> {
+    pretty_env_logger::init();
+
+    let opt = Opt::parse();
+
+    match opt.verbose {
+        0 => log::set_max_level(log::LevelFilter::Warn),
+        1 => log::set_max_level(log::LevelFilter::Info),
+        2 => log::set_max_level(log::LevelFilter::Debug),
+        3 | _ => log::set_max_level(log::LevelFilter::Trace),
+    }
+
+    match opt.operation {
+        Operation::Install(args) => Install::exec(&args),
+        Operation::Uninstall(args) => Uninstall::exec(&args),
+        Operation::List(args) => List::exec(&args),
+        Operation::Apply(args) => Apply::exec(&args),
+        Operation::Status(args) => Status::exec(&args),
+        Operation::New(args) => New::exec(&args),
+        Operation::Upgrade(args) => Upgrade::exec(&args),
+        Operation::Update(args) => Update::exec(&args),
     }
 }
