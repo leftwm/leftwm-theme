@@ -38,7 +38,7 @@ impl Upgrade {
             }
             for theme in repo.themes {
                 let current = match theme.current {
-                    Some(true) => "Current: ".magenta().bold(),
+                    Some(true) => "Current: ".bright_yellow().bold(),
                     _ => "".white(),
                 };
                 if theme.directory.is_some() {
