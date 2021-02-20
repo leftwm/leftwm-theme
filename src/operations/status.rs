@@ -1,4 +1,5 @@
 use crate::errors;
+use crate::models::LeftWM;
 use clap::Clap;
 
 #[derive(Clap, Debug)]
@@ -6,7 +7,7 @@ pub struct Status {}
 
 impl Status {
     pub fn exec(&self) -> Result<(), errors::LeftError> {
-        println!("Status not yet implemented");
+        dbg!(LeftWM::get()?);
         Ok(())
     }
 }

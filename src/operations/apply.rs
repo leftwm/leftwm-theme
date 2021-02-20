@@ -1,4 +1,5 @@
 use crate::errors;
+use crate::models::{Config, LeftWM, Theme};
 use clap::Clap;
 use colored::*;
 use log::{error, trace, warn};
@@ -21,12 +22,15 @@ pub struct Apply {
     /// Don't restart leftwm-worker
     #[clap(short = 'n', long)]
     pub no_reset: bool,
+
+    /// Ignore checks
+    #[clap(short = 'o', long)]
+    pub override_checks: bool,
 }
 
 impl Apply {
     pub fn exec(&self) -> Result<(), errors::LeftError> {
         trace!("Applying theme named {:?}", &self.name);
-        use crate::models::{Config, Theme};
         let mut config = Config::load().unwrap_or_default();
         println!(
             "{}{}{}",
@@ -41,6 +45,11 @@ impl Apply {
         match Theme::find(&mut config, self.name.clone()) {
             Some(theme) => match theme.directory.as_ref() {
                 Some(theme_dir) => {
+                    //Do all necessary checks
+                    if !checks(&theme) && !self.override_checks {
+                        error!("Not all prerequirements passed");
+                        return Err(errors::LeftError::from("PreReqs"));
+                    }
                     let path = Path::new(theme_dir);
                     trace!("{:?}", &path);
                     match fs::remove_dir_all(&dir) {
@@ -67,7 +76,7 @@ impl Apply {
                     Theme::find_mut(&mut config, theme.name, theme.source?)?.current(true);
                     Config::save(&config)?;
                     if !self.no_reset {
-                        println!("{}", "Reloading LeftWM".bright_blue().bold());
+                        println!("{}", "Reloading LeftWM.".bright_blue().bold());
                         Command::new("pkill").arg("leftwm-worker").output()?;
                     }
                     Ok(())
@@ -84,6 +93,29 @@ impl Apply {
                 error!("\n Theme not installed. Try checking your spelling?");
                 Err(errors::LeftError::from("Theme not installed"))
             }
+        }
+    }
+}
+
+pub fn check_versions(vstring: String) -> Result<bool, errors::LeftError> {
+    use semver::{Version, VersionReq};
+    let lwmv = LeftWM::get()?;
+    let requirements = VersionReq::parse(&vstring)?;
+    Ok(requirements.matches(&Version::parse(&lwmv.version)?))
+}
+
+pub fn checks(theme: &Theme) -> bool {
+    trace!("Checking LeftWM version.");
+    match check_versions(
+        theme
+            .leftwm_versions
+            .clone()
+            .unwrap_or_else(|| "*".to_string()),
+    ) {
+        Ok(true) => true,
+        _ => {
+            error!("This theme is incompatible with the installed version of LeftWM.");
+            false
         }
     }
 }
