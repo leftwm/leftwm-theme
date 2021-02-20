@@ -30,16 +30,16 @@ impl Apply {
         let mut config = Config::load().unwrap_or_default();
         println!(
             "{}{}{}",
-            "Setting ".blue().bold(),
-            &self.name.green().bold(),
-            " as default theme.".blue().bold()
+            "Setting ".bright_blue().bold(),
+            &self.name.bright_green().bold(),
+            " as default theme.".bright_blue().bold()
         );
         let mut dir = BaseDirectories::with_prefix("leftwm")?.create_config_directory("")?;
         dir.push("themes");
         dir.push("current");
         trace!("{:?}", &dir);
-        match Theme::find(&mut config.theme, self.name.clone()) {
-            Some(theme) => match theme.directory.as_ref() {
+        match Theme::find(&mut config, self.name.clone()) {
+            Some(mut theme) => match theme.directory.as_ref() {
                 Some(theme_dir) => {
                     let path = Path::new(theme_dir);
                     trace!("{:?}", &path);
@@ -54,12 +54,14 @@ impl Apply {
                     unix::fs::symlink(path, dir)?;
                     println!(
                         "{}{}{}",
-                        "Apply ".blue().bold(),
-                        &self.name.green().bold(),
-                        " as default theme.".blue().bold()
+                        "Applying ".bright_blue().bold(),
+                        &self.name.bright_green().bold(),
+                        " as default theme.".bright_blue().bold()
                     );
+                    theme.current(true);
+                    Config::save(&config)?;
                     if !self.no_reset {
-                        println!("{}", "Reloading LeftWM".blue());
+                        println!("{}", "Reloading LeftWM".bright_blue().bold());
                         Command::new("pkill").arg("leftwm-worker").output()?;
                     }
                     Ok(())

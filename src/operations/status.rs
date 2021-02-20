@@ -6,7 +6,7 @@ pub struct Status {}
 
 impl Status {
     pub fn exec(&self) -> Result<(), errors::LeftError> {
-        println!("Status");
+        println!("Status not yet implemented");
         Ok(())
     }
 }

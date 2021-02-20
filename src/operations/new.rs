@@ -14,7 +14,7 @@ pub struct New {
 impl New {
     pub fn exec(&self) -> Result<(), errors::LeftError> {
         let mut config = Config::load().unwrap_or_default();
-        match Theme::find(&mut config.theme, self.name.clone()) {
+        match Theme::find(&mut config, self.name.clone()) {
             Some(_theme) => {
                 error!(
                     "\n{} could not be created because a theme with that name already exists",
@@ -30,11 +30,11 @@ impl New {
                 dir.push(&self.name);
                 match Repository::init(&dir) {
                     Ok(_repo) => {
-                        config.theme.push(Theme::new(
-                            self.name.clone(),
-                            None,
-                            Some(dir.to_str()?.to_string()),
-                        ));
+                        Config::update_or_append(
+                            &mut config,
+                            &Theme::new(self.name.clone(), None, Some(dir.to_str()?.to_string())),
+                            (&String::from("localhost"), &String::from("LOCAL")),
+                        );
                         Config::save(&config)?;
                         println!(
                             "{} {} {} {}",

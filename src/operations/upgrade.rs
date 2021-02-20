@@ -10,57 +10,68 @@ pub struct Upgrade {}
 
 impl Upgrade {
     pub fn exec(&self) -> Result<(), errors::LeftError> {
+        println!("{}", "Fetching known themes:".bright_blue().bold());
         let mut config = Config::load().unwrap_or_default();
         //attempt to fetch new themes
-        println!("    Retrieving themes from {:?}", &config.source());
-        let resp = reqwest::blocking::get(&config.source())?.text_with_charset("utf-8")?;
-        trace!("{:?}", &resp);
+        for repo in &mut config.repos {
+            if repo.name == "LOCAL" {
+                continue;
+            }
+            println!(
+                "    Retrieving themes from {}",
+                &repo.name.bright_magenta().bold()
+            );
+            let resp = reqwest::blocking::get(&repo.url)?.text_with_charset("utf-8")?;
+            trace!("{:?}", &resp);
 
-        //compare to old themes
-        config.compare(toml::from_str(&resp)?)?;
-        trace!("{:?}", &config);
+            //compare to old themes
+            repo.compare(toml::from_str(&resp)?)?;
+        }
         Config::save(&config)?;
-        println!("{}", "\nUpdating themes:".blue().bold());
+        // Update themes
+        println!("{}", "\nUpdating themes:".bright_blue().bold());
         let mut installed = 0;
-        for x in 0..config.theme.len() {
-            let current = match config.theme[x].current {
-                Some(true) => "Current: ".magenta().bold(),
-                _ => "".white(),
-            };
-            if config.theme[x].directory.is_some() {
-                println!(
-                    "    Updating . . . {}{}: {}",
-                    current,
-                    config.theme[x].name,
-                    config.theme[x]
-                        .description
-                        .as_ref()
-                        .unwrap_or(&"A LeftWM theme".to_string())
-                );
-                let repo = Repository::open(config.theme[x].directory.clone()?)?;
-                match fetch_origin_main(&repo) {
-                    Ok(_) => {
-                        //if defined, attempt to checkout the specific index
-                        if config.theme[x].commit.is_some()
-                            && config.theme[x]
-                                .commit
-                                .clone()
-                                .unwrap_or_else(|| "".to_string())
-                                != *"*"
-                        {
-                            repo.set_head_detached(Oid::from_str(
-                                &config.theme[x].commit.as_ref()?,
-                            )?)?;
-                            repo.checkout_head(None)?;
+        for repo in config.repos {
+            trace!("Upgrading themes in repo {:?}", &repo.name);
+            if repo.name == "LOCAL" {
+                continue;
+            }
+            for theme in repo.themes {
+                let current = match theme.current {
+                    Some(true) => "Current: ".magenta().bold(),
+                    _ => "".white(),
+                };
+                if theme.directory.is_some() {
+                    println!(
+                        "    Updating {}{}/{}: {}",
+                        current,
+                        repo.name.bright_magenta().bold(),
+                        theme.name.bright_yellow().bold(),
+                        theme
+                            .description
+                            .as_ref()
+                            .unwrap_or(&"A LeftWM theme".to_string())
+                    );
+                    let git_repo = Repository::open(theme.directory.clone()?)?;
+                    match fetch_origin_main(&git_repo) {
+                        Ok(_) => {
+                            //if defined, attempt to checkout the specific index
+                            if theme.commit.is_some()
+                                && theme.commit.clone().unwrap_or_else(|| "".to_string()) != *"*"
+                            {
+                                git_repo
+                                    .set_head_detached(Oid::from_str(theme.commit.as_ref()?)?)?;
+                                git_repo.checkout_head(None)?;
+                            }
+                        }
+                        Err(e) => {
+                            trace!("Error: {:?}", e);
+                            error!("Could not fetch repo.");
                         }
                     }
-                    Err(e) => {
-                        trace!("Error: {:?}", e);
-                        error!("Could not fetch repo.");
-                    }
-                }
 
-                installed += 1;
+                    installed += 1;
+                }
             }
         }
         if installed == 0 {

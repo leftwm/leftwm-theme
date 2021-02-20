@@ -8,6 +8,8 @@ pub mod operations;
 
 use crate::operations::{Apply, Install, List, New, Status, Uninstall, Update, Upgrade};
 use clap::Clap;
+use log::error;
+use std::env;
 
 #[derive(Clap, Debug)]
 #[clap(author, about, version)]
@@ -41,19 +43,25 @@ pub enum Operation {
     Status(Status),
 }
 
-fn main() -> Result<(), errors::LeftError> {
-    pretty_env_logger::init();
-
+fn main() {
     let opt = Opt::parse();
 
     match opt.verbose {
-        0 => log::set_max_level(log::LevelFilter::Warn),
-        1 => log::set_max_level(log::LevelFilter::Info),
-        2 => log::set_max_level(log::LevelFilter::Debug),
-        3 | _ => log::set_max_level(log::LevelFilter::Trace),
+        0 => {
+            env::set_var("RUST_LOG", "error");
+        }
+        1 => {
+            env::set_var("RUST_LOG", "info");
+        }
+        2 => {
+            env::set_var("RUST_LOG", "debug");
+        }
+        _ => {
+            env::set_var("RUST_LOG", "trace");
+        }
     }
-
-    match opt.operation {
+    pretty_env_logger::init();
+    let wrapper = match opt.operation {
         Operation::Install(args) => Install::exec(&args),
         Operation::Uninstall(args) => Uninstall::exec(&args),
         Operation::List(args) => List::exec(&args),
@@ -62,5 +70,11 @@ fn main() -> Result<(), errors::LeftError> {
         Operation::New(args) => New::exec(&args),
         Operation::Upgrade(args) => Upgrade::exec(&args),
         Operation::Update(args) => Update::exec(&args),
+    };
+    match wrapper {
+        Ok(_) => {}
+        Err(_e) => {
+            error!("Operation did not complete successfully");
+        }
     }
 }

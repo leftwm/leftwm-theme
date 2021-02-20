@@ -16,6 +16,7 @@ pub enum LeftErrorKind {
     StreamError(),
     NoneError(),
     GitError(git2::Error),
+    ParseIntError(core::num::ParseIntError),
 }
 
 impl fmt::Display for LeftError {
@@ -35,6 +36,7 @@ impl fmt::Display for LeftErrorKind {
             LeftErrorKind::NoneError() => write!(f, "None Error"),
             LeftErrorKind::ReqwestError(ref err) => write!(f, "Request Error: {}", err),
             LeftErrorKind::GitError(ref err) => write!(f, "{}", err),
+            LeftErrorKind::ParseIntError(ref err) => write!(f, "{}", err),
         }
     }
 }
@@ -90,5 +92,11 @@ impl From<&str> for LeftError {
 impl From<git2::Error> for LeftError {
     fn from(inner: git2::Error) -> LeftError {
         LeftErrorKind::GitError(inner).into()
+    }
+}
+
+impl From<core::num::ParseIntError> for LeftError {
+    fn from(inner: core::num::ParseIntError) -> LeftError {
+        LeftErrorKind::ParseIntError(inner).into()
     }
 }
