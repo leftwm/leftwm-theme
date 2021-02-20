@@ -1,5 +1,5 @@
 use crate::errors;
-use crate::models::LeftWM;
+use crate::models::LeftWm;
 use clap::Clap;
 
 #[derive(Clap, Debug)]
@@ -7,7 +7,7 @@ pub struct Status {}
 
 impl Status {
     pub fn exec(&self) -> Result<(), errors::LeftError> {
-        dbg!(LeftWM::get()?);
+        dbg!(LeftWm::get()?);
         Ok(())
     }
 }

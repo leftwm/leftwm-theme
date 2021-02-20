@@ -1,5 +1,5 @@
 use crate::errors;
-use crate::models::{Config, LeftWM, Theme};
+use crate::models::{Config, LeftWm, Theme};
 use clap::Clap;
 use colored::*;
 use log::{error, trace, warn};
@@ -99,7 +99,7 @@ impl Apply {
 
 pub fn check_versions(vstring: String) -> Result<bool, errors::LeftError> {
     use semver::{Version, VersionReq};
-    let lwmv = LeftWM::get()?;
+    let lwmv = LeftWm::get()?;
     let requirements = VersionReq::parse(&vstring)?;
     Ok(requirements.matches(&Version::parse(&lwmv.version)?))
 }

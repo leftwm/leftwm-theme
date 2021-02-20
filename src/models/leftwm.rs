@@ -3,14 +3,14 @@ use std::process::Command;
 use std::str;
 
 #[derive(Debug)]
-pub struct LeftWM {
+pub struct LeftWm {
     pub version: String,
 }
 
-impl LeftWM {
+impl LeftWm {
     pub fn get() -> Result<Self> {
         match str::from_utf8(&Command::new("leftwm-state").arg("-V").output()?.stdout) {
-            Ok(output) => Ok(LeftWM {
+            Ok(output) => Ok(LeftWm {
                 version: output.replace("LeftWM State ", "").replace("\n", ""),
             }),
             Err(_) => {
