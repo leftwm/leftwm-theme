@@ -30,7 +30,7 @@ impl Update {
         for repo in &mut config.repos {
             for theme in &mut repo.themes {
                 let current = match theme.current {
-                    Some(true) => "Current: ".magenta().bold(),
+                    Some(true) => "Current: ".bright_yellow().bold(),
                     _ => "".white(),
                 };
                 let installed = match theme.directory {
@@ -38,9 +38,9 @@ impl Update {
                     None => "".white(),
                 };
                 println!(
-                    "   {}/{}{}: {}{}",
-                    repo.name.bright_magenta().bold(),
+                    "   {}{}/{}: {}{}",
                     current,
+                    repo.name.bright_magenta().bold(),
                     theme.name.bright_green().bold(),
                     theme
                         .description

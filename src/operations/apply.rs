@@ -39,7 +39,7 @@ impl Apply {
         dir.push("current");
         trace!("{:?}", &dir);
         match Theme::find(&mut config, self.name.clone()) {
-            Some(mut theme) => match theme.directory.as_ref() {
+            Some(theme) => match theme.directory.as_ref() {
                 Some(theme_dir) => {
                     let path = Path::new(theme_dir);
                     trace!("{:?}", &path);
@@ -58,7 +58,13 @@ impl Apply {
                         &self.name.bright_green().bold(),
                         " as default theme.".bright_blue().bold()
                     );
-                    theme.current(true);
+                    trace!("{:?}", "Altering config");
+                    for repo in &mut config.repos {
+                        for mut theme in &mut repo.themes {
+                            theme.current = Some(false);
+                        }
+                    }
+                    Theme::find_mut(&mut config, theme.name, theme.source?)?.current(true);
                     Config::save(&config)?;
                     if !self.no_reset {
                         println!("{}", "Reloading LeftWM".bright_blue().bold());
