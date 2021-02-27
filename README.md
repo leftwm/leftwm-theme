@@ -1,10 +1,21 @@
-# LeftWM-theme
-A tool to help manage themes for LeftWM
+<div align="center">
+  <h1><code>leftwm-theme</code></h1>
+
+  <p>
+    <strong>A theme manager for
+    <a href="https://github.com/leftwm/leftwm/">LeftWM</a></strong>
+  </p>
+  <p>
+    <a href="https://github.com/leftwm/leftwm-theme/actions?query=workflow%3ACI"><img src="https://github.com/leftwm/leftwm-theme/workflows/CI/badge.svg" alt="build status" /></a>
+    <!--<img src="https://img.shields.io/badge/rustc-1.37+-green.svg" alt="min rustc" />-->
+    <!--<a href="https://docs.rs/leftwm/0.2.6/leftwm/"><img src="https://docs.rs/leftwm-theme/badge.svg" alt="Documentation" /></a>-->
+  </p>
+</div>
 
 
 
 ## Installation
-Currently, LeftWM-Theme is only available by Git. To install, clone this repository:
+Currently, LeftWM-theme is only available by Git. To install, clone this repository:
 ```bash
 git clone https://github.com/leftwm/leftwm-theme
 ```
@@ -22,7 +33,7 @@ You can then install LeftWM-theme:
 cargo install
 #-- or --
 #for system-wide install
-sudo cargo install --path=/usr/bin 
+sudo cargo install --root=/usr/bin 
 ```
 
 ## Usage
@@ -39,13 +50,14 @@ leftwm-theme autofind
 **Note: as of 02/26/2021 autofind is not yet fully implemented**
 
 ### Install a theme
-LeftWM-theme differentiates between _installing_ a theme and _applying_ a theme. Installing a theme is akin to downloading it, behind the scenes LeftWM-theme does a `git clone {theme}`. No dependency checks are performed at installation time. Applying a theme is akin to setting it up for use. Dependency checks are performed. To install a theme, for example the fabulous Orange Forest theme, run (quotation marks needed for names with spaces):
+LeftWM-theme differentiates between _installing_ a theme and _applying_ a theme. Installing a theme is akin to downloading it; behind the scenes LeftWM-theme runs `git clone {theme}`. No dependency checks are performed at installation time, but instead at application time. To install a theme, for example the fabulous Orange Forest theme, run (quotation marks needed for names with spaces):
 ```bash
 leftwm-theme install "Orange Forest"
 ```
 **Note: LeftWM-theme is CaSe SeNsItIvE, so be careful!**
 
 ### Apply a theme
+LeftWM-theme will check for dependencies, LeftWM-version, and the like during the application process.
 Now that you've installed Orange Forest (or whatever theme you like), to set it as your current theme, run:
 ```bash
 leftwm-theme apply "Orange Forest"
@@ -130,6 +142,7 @@ Double check your name. Although `update` may say `mautam/theme`, you just need 
 - [x] Allow users to update their repository theme lists with `update` as in apt-get form
 - [x] Allow users to update their themes with `upgrade` command, as in apt-get form
 	- [ ] Allow users to skip repo update
+	- [ ] Perform dependency checks prior to updating the current theme
 - [ ] Allow users to search for themes by name
 ### Version 0.2.0
 - [ ] Extend `theme.toml` to allow for up/down specifications within `theme.toml`
@@ -141,6 +154,7 @@ Double check your name. Although `update` may say `mautam/theme`, you just need 
 - [ ] Improve documentation
 - [ ] Better, more consistent error handling
 - [ ] Remove `nightly` Rust requirement by replacing `?` on Options
+- [ ] Add a testing suite
 
 
 

@@ -1,6 +1,6 @@
 use crate::errors;
 use crate::errors::Result;
-use crate::models::theme::{TempThemes, Theme};
+use crate::models::theme::{DependencyL, TempThemes, Theme};
 use log::{error, trace};
 use std::fs;
 use std::fs::File;
@@ -35,7 +35,10 @@ impl Config {
             version: Some("0.0.1".to_string()),
             leftwm_versions: Some("*".to_string()),
             commit: Some("*".to_string()),
-            dependencies: None,
+            dependencies: Some(vec![DependencyL {
+                program: String::from("polybar"),
+                ..Default::default()
+            }]),
             current: None,
             source: None,
         });

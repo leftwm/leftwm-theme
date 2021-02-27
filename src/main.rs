@@ -6,7 +6,7 @@ pub mod errors;
 pub mod models;
 pub mod operations;
 
-use crate::operations::{Apply, Install, List, New, Status, Uninstall, Update, Upgrade};
+use crate::operations::{Apply, AutoFind, Install, List, New, Status, Uninstall, Update, Upgrade};
 use clap::Clap;
 use log::error;
 use std::env;
@@ -24,6 +24,8 @@ pub struct Opt {
 
 #[derive(Clap, Debug)]
 pub enum Operation {
+    /// Finds themes not installed by LeftWM-theme
+    AutoFind(AutoFind),
     /// Install a theme
     Install(Install),
     /// Uninstall a theme
@@ -62,6 +64,7 @@ fn main() {
     }
     pretty_env_logger::init();
     let wrapper = match opt.operation {
+        Operation::AutoFind(args) => AutoFind::exec(&args),
         Operation::Install(args) => Install::exec(&args),
         Operation::Uninstall(args) => Uninstall::exec(&args),
         Operation::List(args) => List::exec(&args),

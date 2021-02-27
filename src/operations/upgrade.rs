@@ -57,7 +57,7 @@ impl Upgrade {
                         Ok(_) => {
                             //if defined, attempt to checkout the specific index
                             if theme.commit.is_some()
-                                && theme.commit.clone().unwrap_or_else(|| "".to_string()) != *"*"
+                                && theme.commit.clone().unwrap_or_default() != *"*"
                             {
                                 git_repo
                                     .set_head_detached(Oid::from_str(theme.commit.as_ref()?)?)?;

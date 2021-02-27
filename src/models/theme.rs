@@ -9,8 +9,8 @@ pub struct Theme {
     pub commit: Option<String>,
     pub version: Option<String>,
     pub leftwm_versions: Option<String>,
-    pub dependencies: Option<Vec<Dependency>>,
     pub current: Option<bool>,
+    pub dependencies: Option<Vec<DependencyL>>,
     #[serde(skip)]
     pub source: Option<String>,
 }
@@ -24,16 +24,17 @@ pub struct TempThemes {
 pub struct DependencyL {
     pub program: String,
     pub optional: Option<bool>,
-    pub pacman: Option<String>,
-    pub dnf: Option<String>,
-    pub apt: Option<String>,
-    pub git: Option<String>,
+    pub package: Option<String>,
 }
 
-#[derive(Debug, Deserialize, Clone, Serialize)]
-pub enum Dependency {
-    String(String),
-    Depedency(DependencyL),
+impl Default for DependencyL {
+    fn default() -> DependencyL {
+        DependencyL {
+            program: String::from("leftwm"),
+            optional: None,
+            package: None,
+        }
+    }
 }
 
 impl Theme {
@@ -60,21 +61,19 @@ impl Theme {
     }
 
     pub fn find(config: &mut Config, name: String) -> Option<Theme> {
-        match config.themes(false).iter().find(|p| name == p.name) {
-            Some(theme) => Some(theme.clone()),
-            None => None,
-        }
+        config
+            .themes(false)
+            .iter()
+            .find(|p| name == p.name)
+            .cloned()
     }
 
     pub fn find_installed(config: &mut Config, name: String) -> Option<Theme> {
-        match config
+        config
             .themes(false)
             .iter()
             .find(|p| name == p.name && p.directory.is_some())
-        {
-            Some(theme) => Some(theme.clone()),
-            None => None,
-        }
+            .cloned()
     }
 
     pub fn find_all(config: &mut Config, name: String) -> Option<Vec<Theme>> {
@@ -94,10 +93,7 @@ impl Theme {
     }
 
     pub fn directory(&mut self, dir: Option<&str>) {
-        self.directory = match dir {
-            Some(dir) => Some(dir.to_string()),
-            None => None,
-        };
+        self.directory = dir.map(|dir| dir.to_string());
     }
 
     pub fn source(&mut self, name: String) -> &mut Theme {

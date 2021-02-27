@@ -13,6 +13,13 @@ pub struct New {
 
 impl New {
     pub fn exec(&self) -> Result<(), errors::LeftError> {
+        if self.name.contains('/') {
+            error!(
+                "\n{} could not be created because a theme name should not contain '/'",
+                &self.name,
+            );
+            return Err(errors::LeftError::from("Theme name not valid."));
+        }
         let mut config = Config::load().unwrap_or_default();
         match Theme::find(&mut config, self.name.clone()) {
             Some(_theme) => {
