@@ -2,6 +2,7 @@ use crate::errors;
 use crate::models::{Config, LeftWm, Theme};
 use clap::Clap;
 use colored::*;
+use errors::LeftError;
 use log::{error, trace, warn};
 use std::os::unix;
 use std::path::Path;
@@ -73,7 +74,18 @@ impl Apply {
                             theme.current = Some(false);
                         }
                     }
-                    Theme::find_mut(&mut config, theme.name, theme.source?)?.current(true);
+                    match theme.source {
+                        Some(source) => match Theme::find_mut(&mut config, theme.name, source) {
+                            Some(target_theme) => target_theme.current(true),
+                            None => {
+                                error!("Theme not found");
+                                return Err(LeftError::from("Theme not found"));
+                            }
+                        },
+                        None => {
+                            error!("Theme does not have a source");
+                        }
+                    }
                     Config::save(&config)?;
                     if !self.no_reset {
                         println!("{}", "Reloading LeftWM.".bright_blue().bold());

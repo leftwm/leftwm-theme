@@ -1,4 +1,5 @@
 use crate::errors;
+use crate::errors::LeftError;
 use crate::errors::Result;
 use crate::models::{Config, Theme};
 use clap::Clap;
@@ -34,7 +35,14 @@ impl Install {
                 match choose_one(themes) {
                     Ok(theme) => {
                         trace!("{:?}", &theme);
-                        let repo = theme.repository.as_ref()?.clone();
+                        let repo = match theme.repository.as_ref() {
+                            Some(repo) => repo,
+                            None => {
+                                return Err(LeftError::from(
+                                    "Repository information missing for theme",
+                                ))
+                            }
+                        };
                         let mut dir =
                             BaseDirectories::with_prefix("leftwm")?.create_config_directory("")?;
                         dir.push("themes");
@@ -45,8 +53,25 @@ impl Install {
                         match Repository::clone(&repo, dir.clone()) {
                             Ok(_) => {
                                 //add to config and save
-                                Theme::find_mut(&mut config, self.name.clone(), theme.source?)?
-                                    .directory(dir.to_str());
+                                match theme.source {
+                                    Some(source) => {
+                                        match Theme::find_mut(
+                                            &mut config,
+                                            self.name.clone(),
+                                            source,
+                                        ) {
+                                            Some(target_theme) => {
+                                                target_theme.directory(dir.to_str())
+                                            }
+                                            None => {
+                                                return Err(LeftError::from(
+                                                    "Theme not found in db",
+                                                ))
+                                            }
+                                        }
+                                    }
+                                    None => return Err(LeftError::from("Theme not found in db")),
+                                }
                                 Config::save(&config)?;
                                 println!(
                                     "{}{}{}{}{}{}",
@@ -111,9 +136,13 @@ pub fn ask(themes: &[Theme]) -> Result<usize> {
                 return_index = Err(errors::LeftError::from("Theme already installed"));
                 break 'outer;
             }
+            let source_string = match &theme.source {
+                Some(source) => source.clone(),
+                None => String::from("UNKNOWN"),
+            };
             println!(
                 "    {}/{} [{}]",
-                &theme.source.as_ref()?.bright_magenta().bold(),
+                &source_string.bright_magenta().bold(),
                 &theme.name.bright_green().bold(),
                 &id.to_string().bright_yellow().bold()
             );

@@ -157,7 +157,7 @@ Double check your name. Although `update` may say `mautam/theme`, you just need 
 - [ ] Provision for name aliases for dependencies in different distros
 - [ ] Improve documentation
 - [ ] Better, more consistent error handling
-- [ ] Remove `nightly` Rust requirement by replacing `?` on Options
+- [x] Remove `nightly` Rust requirement by replacing `?` on Options
 - [ ] Add a testing suite
 
 
