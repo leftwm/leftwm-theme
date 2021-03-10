@@ -21,8 +21,5 @@ pub fn yes_or_no(question: String) -> bool {
 
         println!("Please write either yes or no.")
     };
-    match state.as_str() {
-        "YES" => true,
-        _ => false,
-    }
+    matches!(state.as_str(), "YES")
 }
