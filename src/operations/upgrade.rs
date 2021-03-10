@@ -6,28 +6,34 @@ use git2::{Oid, Repository};
 use log::{error, trace};
 
 #[derive(Clap, Debug)]
-pub struct Upgrade {}
+pub struct Upgrade {
+    /// Don't update db
+    #[clap(short = 'i', long)]
+    pub skipdbupdate: bool,
+}
 
 impl Upgrade {
     pub fn exec(&self) -> Result<(), errors::LeftError> {
-        println!("{}", "Fetching known themes:".bright_blue().bold());
         let mut config = Config::load().unwrap_or_default();
         //attempt to fetch new themes
-        for repo in &mut config.repos {
-            if repo.name == "LOCAL" {
-                continue;
-            }
-            println!(
-                "    Retrieving themes from {}",
-                &repo.name.bright_magenta().bold()
-            );
-            let resp = reqwest::blocking::get(&repo.url)?.text_with_charset("utf-8")?;
-            trace!("{:?}", &resp);
+        if !self.skipdbupdate {
+            println!("{}", "Fetching known themes:".bright_blue().bold());
+            for repo in &mut config.repos {
+                if repo.name == "LOCAL" {
+                    continue;
+                }
+                println!(
+                    "    Retrieving themes from {}",
+                    &repo.name.bright_magenta().bold()
+                );
+                let resp = reqwest::blocking::get(&repo.url)?.text_with_charset("utf-8")?;
+                trace!("{:?}", &resp);
 
-            //compare to old themes
-            repo.compare(toml::from_str(&resp)?)?;
+                //compare to old themes
+                repo.compare(toml::from_str(&resp)?)?;
+            }
+            Config::save(&config)?;
         }
-        Config::save(&config)?;
         // Update themes
         println!("{}", "\nUpdating themes:".bright_blue().bold());
         let mut installed = 0;

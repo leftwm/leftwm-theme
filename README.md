@@ -15,7 +15,11 @@
 
 
 ## Installation
-Currently, LeftWM-theme is only available by Git. To install, clone this repository:
+Currently, LeftWM-theme is only available by Git and AUR. 
+
+To install by AUR (Arch-based distributions only), use package `leftwm-theme-git`.
+
+To install manually, clone this repository:
 ```bash
 git clone https://github.com/leftwm/leftwm-theme
 ```
@@ -141,7 +145,7 @@ Double check your name. Although `update` may say `mautam/theme`, you just need 
 	- [ ] Make sure themes don't include `/` or other OS-specific marks. **Partially complete**
 - [x] Allow users to update their repository theme lists with `update` as in apt-get form
 - [x] Allow users to update their themes with `upgrade` command, as in apt-get form
-	- [ ] Allow users to skip repo update
+	- [x] Allow users to skip repo update
 	- [ ] Perform dependency checks prior to updating the current theme
 - [ ] Allow users to search for themes by name
 ### Version 0.2.0
