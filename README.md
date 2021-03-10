@@ -140,7 +140,7 @@ Double check your name. Although `update` may say `mautam/theme`, you just need 
 - [x] Allow users to add more theme repositories
 	- [x] Allow users to choose from which repository to install themes
 - [x] Allow users to create new themes 
-	- [ ] Provide basic themes for users to fork into their own
+	- [x] Provide basic themes for users to fork into their own
 	- [ ] Generate appropriate `known.toml` pull requests and `theme.toml` files
 	- [ ] Make sure themes don't include `/` or other OS-specific marks. **Partially complete**
 - [x] Allow users to update their repository theme lists with `update` as in apt-get form
