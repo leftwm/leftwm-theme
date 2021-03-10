@@ -27,7 +27,7 @@ Then enter the repository:
 ```
 cd leftwm-theme
 ```
-Then build with Cargo (Nightly Rust is required, use `rustup install nightly` or see [the rustup website.](https://doc.rust-lang.org/nightly/edition-guide/rust-2018/rustup-for-managing-rust-versions.html)):
+Then build with Cargo:
 ```bash
 cargo build --release
 ```
@@ -47,12 +47,12 @@ The first time you start up LeftWM-theme, it will generate a file called `themes
 leftwm-theme update
 ```
 
-To populate your local repository with your previously installed themes, use the following:
+[](To populate your local repository with your previously installed themes, use the following:
 ```bash
 leftwm-theme autofind
 ```
-**Note: as of 02/26/2021 autofind is not yet fully implemented**
-
+**Note: as of 02/26/2021 autofind is not yet fully implemented**)
+ 
 ### Install a theme
 LeftWM-theme differentiates between _installing_ a theme and _applying_ a theme. Installing a theme is akin to downloading it; behind the scenes LeftWM-theme runs `git clone {theme}`. No dependency checks are performed at installation time, but instead at application time. To install a theme, for example the fabulous Orange Forest theme, run (quotation marks needed for names with spaces):
 ```bash
@@ -147,7 +147,7 @@ Double check your name. Although `update` may say `mautam/theme`, you just need 
 - [x] Allow users to update their themes with `upgrade` command, as in apt-get form
 	- [x] Allow users to skip repo update
 	- [ ] Perform dependency checks prior to updating the current theme
-- [ ] Allow users to search for themes by name
+- [x] Allow users to search for themes by name
 ### Version 0.2.0
 - [ ] Extend `theme.toml` to allow for up/down specifications within `theme.toml`
 - [ ] Integrate `themes.toml` and `known.toml` better
