@@ -46,13 +46,13 @@ The first time you start up LeftWM-theme, it will generate a file called `themes
 ```bash
 leftwm-theme update
 ```
-
+<!---
 [](To populate your local repository with your previously installed themes, use the following:
 ```bash
 leftwm-theme autofind
 ```
 **Note: as of 02/26/2021 autofind is not yet fully implemented**)
- 
+ -->
 ### Install a theme
 LeftWM-theme differentiates between _installing_ a theme and _applying_ a theme. Installing a theme is akin to downloading it; behind the scenes LeftWM-theme runs `git clone {theme}`. No dependency checks are performed at installation time, but instead at application time. To install a theme, for example the fabulous Orange Forest theme, run (quotation marks needed for names with spaces):
 ```bash
