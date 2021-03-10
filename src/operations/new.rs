@@ -7,7 +7,7 @@ use git2::Repository;
 use log::{error, trace};
 use std::io;
 use std::io::Write;
-use std::path::{Path,PathBuf};
+use std::path::{Path, PathBuf};
 use xdg::BaseDirectories;
 
 #[derive(Clap, Debug)]
@@ -75,11 +75,12 @@ impl New {
                             "1" => copy_files("/usr/share/leftwm/themes/basic_polybar/", dir),
                             "2" => copy_files("/usr/share/leftwm/themes/basic_xmobar/", dir),
                             _ => {
-                                trace!("Doing nothing"); Ok(())
+                                trace!("Doing nothing");
+                                Ok(())
                             }
                         }
                     }
-                        Err(e) => {
+                    Err(e) => {
                         error!(
                             "\n{} could not be created because {:?}",
                             &self.name,
@@ -94,23 +95,22 @@ impl New {
 }
 
 fn copy_files(dir: &str, left_path: PathBuf) -> Result<(), errors::LeftError> {
-    trace!("{:?}",&dir);
+    trace!("{:?}", &dir);
     let directory = Path::new(dir);
     trace!("{:?}", &directory);
     if directory.is_dir() {
-    trace!("Directory Exists");
+        trace!("Directory Exists");
         for entry in std::fs::read_dir(directory)? {
             trace!("{:?}", &entry);
             let entry = entry?;
             let path = entry.path();
             let mut pathnew = left_path.clone();
             pathnew.push(entry.file_name());
-            trace!("{:?}",std::fs::copy(path, pathnew));
+            trace!("{:?}", std::fs::copy(path, pathnew));
         }
-    }
-    else {
+    } else {
         error!("Basic themes directory /usr/share/leftwm/ not found. Was it installed by LeftWM?");
-        return Err(errors::LeftError::from("Theme not prefilled"))
+        return Err(errors::LeftError::from("Theme not prefilled"));
     }
     Ok(())
 }
