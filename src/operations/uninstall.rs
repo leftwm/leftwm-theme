@@ -1,11 +1,11 @@
 use crate::errors;
+use crate::errors::LeftError;
 use crate::models::{Config, Theme};
+use crate::utils::read::yes_or_no;
 use clap::Clap;
 use colored::*;
 use log::error;
 use std::fs;
-use std::io;
-use std::io::Write;
 use std::path::Path;
 
 #[derive(Clap, Debug)]
@@ -20,29 +20,27 @@ impl Uninstall {
             "Looking for theme to uninstall . . . ".bright_blue().bold()
         );
         let mut config = Config::load().unwrap_or_default();
-        let theme = Theme::find_installed(&mut config, self.name.clone())?;
+        let theme = match Theme::find_installed(&mut config, self.name.clone()) {
+            Some(target_theme) => target_theme,
+            None => return Err(LeftError::from("Theme not found")),
+        };
         match theme.directory.as_ref() {
             Some(directory) => {
                 let path = Path::new(directory);
-                let mut state: String;
-                loop {
-                    println!(
-                        "    Are you sure you want to uninstall this theme, located at {}?",
-                        path.to_str()?
-                    );
-                    print!("{}", "yes/no =>".bright_yellow().bold());
-                    io::stdout().flush().unwrap();
-                    state = read_one().trim().to_uppercase();
-
-                    if state == *"YES" || state == *"NO" {
-                        break;
-                    }
-
-                    println!("Please write either yes or no.")
-                }
-                if state == *"YES" {
+                if yes_or_no(format!(
+                    "    Are you sure you want to uninstall this theme, located at {}?",
+                    path.to_str().unwrap_or("Unknown location")
+                )) {
                     fs::remove_dir_all(path)?;
-                    Theme::find_mut(&mut config, self.name.clone(), theme.source?)?.directory(None);
+                    match theme.source {
+                        Some(source) => {
+                            match Theme::find_mut(&mut config, self.name.clone(), source) {
+                                Some(target_theme) => target_theme.directory(None),
+                                None => return Err(LeftError::from("Could not find theme")),
+                            }
+                        }
+                        None => return Err(LeftError::from("No source found")),
+                    }
                     Config::save(&config)?;
                 } else {
                     println!("{}", "No actions to take. Exiting . . . ".yellow().bold());
@@ -56,10 +54,4 @@ impl Uninstall {
             }
         }
     }
-}
-
-pub fn read_one() -> String {
-    let mut words = String::new();
-    io::stdin().read_line(&mut words).ok();
-    words
 }

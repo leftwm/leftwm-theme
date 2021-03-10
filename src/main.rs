@@ -1,12 +1,14 @@
-#![feature(try_trait)]
 #[macro_use]
 extern crate serde_derive;
 
 pub mod errors;
 pub mod models;
 pub mod operations;
+pub mod utils;
 
-use crate::operations::{Apply, Install, List, New, Status, Uninstall, Update, Upgrade};
+use crate::operations::{
+    Apply, AutoFind, Install, List, New, Search, Status, Uninstall, Update, Upgrade,
+};
 use clap::Clap;
 use log::error;
 use std::env;
@@ -24,6 +26,8 @@ pub struct Opt {
 
 #[derive(Clap, Debug)]
 pub enum Operation {
+    /// Finds themes not installed by LeftWM-theme
+    AutoFind(AutoFind),
     /// Install a theme
     Install(Install),
     /// Uninstall a theme
@@ -41,6 +45,8 @@ pub enum Operation {
     Apply(Apply),
     /// Print out current theme information
     Status(Status),
+    /// Search for a theme by name
+    Search(Search),
 }
 
 fn main() {
@@ -62,6 +68,7 @@ fn main() {
     }
     pretty_env_logger::init();
     let wrapper = match opt.operation {
+        Operation::AutoFind(args) => AutoFind::exec(&args),
         Operation::Install(args) => Install::exec(&args),
         Operation::Uninstall(args) => Uninstall::exec(&args),
         Operation::List(args) => List::exec(&args),
@@ -70,6 +77,7 @@ fn main() {
         Operation::New(args) => New::exec(&args),
         Operation::Upgrade(args) => Upgrade::exec(&args),
         Operation::Update(args) => Update::exec(&args),
+        Operation::Search(args) => Search::exec(&args),
     };
     match wrapper {
         Ok(_) => {}

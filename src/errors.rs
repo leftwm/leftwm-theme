@@ -16,6 +16,7 @@ pub enum LeftErrorKind {
     StreamError(),
     NoneError(),
     GitError(git2::Error),
+    Generic(String),
     ParseIntError(core::num::ParseIntError),
     ReqParseError(semver::ReqParseError),
     SemVerError(semver::SemVerError),
@@ -38,6 +39,7 @@ impl fmt::Display for LeftErrorKind {
             LeftErrorKind::NoneError() => write!(f, "None Error"),
             LeftErrorKind::ReqwestError(ref err) => write!(f, "Request Error: {}", err),
             LeftErrorKind::GitError(ref err) => write!(f, "{}", err),
+            LeftErrorKind::Generic(ref err) => write!(f, "{}", err),
             LeftErrorKind::ParseIntError(ref err) => write!(f, "{}", err),
             LeftErrorKind::ReqParseError(ref err) => write!(f, "{}", err),
             LeftErrorKind::SemVerError(ref err) => write!(f, "{}", err),
@@ -78,12 +80,6 @@ impl From<toml::de::Error> for LeftError {
 impl From<reqwest::Error> for LeftError {
     fn from(inner: reqwest::Error) -> LeftError {
         LeftErrorKind::ReqwestError(inner).into()
-    }
-}
-
-impl From<std::option::NoneError> for LeftError {
-    fn from(_inner: std::option::NoneError) -> LeftError {
-        LeftErrorKind::NoneError().into()
     }
 }
 

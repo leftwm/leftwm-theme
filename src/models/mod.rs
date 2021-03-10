@@ -4,4 +4,4 @@ mod theme;
 
 pub use config::Config;
 pub use leftwm::LeftWm;
-pub use theme::Theme;
+pub use theme::{DependencyL, Theme};

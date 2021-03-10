@@ -2,11 +2,12 @@ use crate::errors;
 use crate::models::{Config, LeftWm, Theme};
 use clap::Clap;
 use colored::*;
+use errors::LeftError;
 use log::{error, trace, warn};
-use std::fs;
 use std::os::unix;
 use std::path::Path;
 use std::process::Command;
+use std::{env, fs};
 use xdg::BaseDirectories;
 
 /* This function sets a particular theme as the current theme in ~./config/leftwm/themes/
@@ -69,11 +70,22 @@ impl Apply {
                     );
                     trace!("{:?}", "Altering config");
                     for repo in &mut config.repos {
-                        for mut theme in &mut repo.themes {
+                        for theme in &mut repo.themes {
                             theme.current = Some(false);
                         }
                     }
-                    Theme::find_mut(&mut config, theme.name, theme.source?)?.current(true);
+                    match theme.source {
+                        Some(source) => match Theme::find_mut(&mut config, theme.name, source) {
+                            Some(target_theme) => target_theme.current(true),
+                            None => {
+                                error!("Theme not found");
+                                return Err(LeftError::from("Theme not found"));
+                            }
+                        },
+                        None => {
+                            error!("Theme does not have a source");
+                        }
+                    }
                     Config::save(&config)?;
                     if !self.no_reset {
                         println!("{}", "Reloading LeftWM.".bright_blue().bold());
@@ -105,6 +117,19 @@ pub fn check_versions(vstring: String) -> Result<bool, errors::LeftError> {
 }
 
 pub fn checks(theme: &Theme) -> bool {
+    trace!("Checking dependencies.");
+    match theme.dependencies.clone() {
+        None => {
+            trace!("No dependencies detected");
+        }
+        Some(theme_dependencies) => {
+            for dependency in theme_dependencies {
+                if !is_program_in_path(&dependency.program) {
+                    return false;
+                }
+            }
+        }
+    }
     trace!("Checking LeftWM version.");
     match check_versions(
         theme
@@ -118,4 +143,17 @@ pub fn checks(theme: &Theme) -> bool {
             false
         }
     }
+}
+
+fn is_program_in_path(program: &str) -> bool {
+    trace!("Checking dependency {}", program);
+    if let Ok(path) = env::var("PATH") {
+        for p in path.split(':') {
+            let p_str = format!("{}/{}", p, program);
+            if fs::metadata(p_str).is_ok() {
+                return true;
+            }
+        }
+    }
+    false
 }
