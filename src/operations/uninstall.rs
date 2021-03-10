@@ -1,11 +1,10 @@
 use crate::errors;
 use crate::models::{Config, Theme};
+use crate::utils::read::yes_or_no;
 use clap::Clap;
 use colored::*;
 use log::error;
 use std::fs;
-use std::io;
-use std::io::Write;
 use std::path::Path;
 
 #[derive(Clap, Debug)]
@@ -24,23 +23,10 @@ impl Uninstall {
         match theme.directory.as_ref() {
             Some(directory) => {
                 let path = Path::new(directory);
-                let mut state: String;
-                loop {
-                    println!(
-                        "    Are you sure you want to uninstall this theme, located at {}?",
-                        path.to_str()?
-                    );
-                    print!("{}", "yes/no =>".bright_yellow().bold());
-                    io::stdout().flush().unwrap();
-                    state = read_one().trim().to_uppercase();
-
-                    if state == *"YES" || state == *"NO" {
-                        break;
-                    }
-
-                    println!("Please write either yes or no.")
-                }
-                if state == *"YES" {
+                if yes_or_no(format!(
+                    "    Are you sure you want to uninstall this theme, located at {}?",
+                    path.to_str()?
+                )) {
                     fs::remove_dir_all(path)?;
                     Theme::find_mut(&mut config, self.name.clone(), theme.source?)?.directory(None);
                     Config::save(&config)?;
@@ -56,10 +42,4 @@ impl Uninstall {
             }
         }
     }
-}
-
-pub fn read_one() -> String {
-    let mut words = String::new();
-    io::stdin().read_line(&mut words).ok();
-    words
 }

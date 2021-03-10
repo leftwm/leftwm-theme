@@ -5,6 +5,7 @@ extern crate serde_derive;
 pub mod errors;
 pub mod models;
 pub mod operations;
+pub mod utils;
 
 use crate::operations::{Apply, AutoFind, Install, List, New, Status, Uninstall, Update, Upgrade};
 use clap::Clap;
