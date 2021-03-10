@@ -6,7 +6,9 @@ pub mod models;
 pub mod operations;
 pub mod utils;
 
-use crate::operations::{Apply, AutoFind, Install, List, New, Status, Uninstall, Update, Upgrade};
+use crate::operations::{
+    Apply, AutoFind, Install, List, New, Search, Status, Uninstall, Update, Upgrade,
+};
 use clap::Clap;
 use log::error;
 use std::env;
@@ -43,6 +45,8 @@ pub enum Operation {
     Apply(Apply),
     /// Print out current theme information
     Status(Status),
+    /// Search for a theme by name
+    Search(Search),
 }
 
 fn main() {
@@ -73,6 +77,7 @@ fn main() {
         Operation::New(args) => New::exec(&args),
         Operation::Upgrade(args) => Upgrade::exec(&args),
         Operation::Update(args) => Update::exec(&args),
+        Operation::Search(args) => Search::exec(&args),
     };
     match wrapper {
         Ok(_) => {}
