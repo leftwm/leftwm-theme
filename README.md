@@ -33,11 +33,11 @@ cargo build --release
 ```
 You can then install LeftWM-theme:
 ```bash
-# for single-user install
-cargo install
+# for production installations (does not update when recompiled)
+sudo install -s -Dm755 ./target/release/leftwm-theme -t /usr/bin
 #-- or --
-#for system-wide install
-sudo cargo install --root=/usr/bin 
+# for developer installations (updates when recompiled)
+sudo ln -s "$(pwd)"/target/release/leftwm-theme /usr/bin/leftwm-theme
 ```
 
 ## Usage
