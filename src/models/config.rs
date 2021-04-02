@@ -22,7 +22,7 @@ pub struct Repo {
 
 impl Config {
     pub fn default() -> Self {
-        let config = Config {
+        Config {
             repos: vec![
                 Repo {
                     url: String::from("https://raw.githubusercontent.com/leftwm/leftwm-community-themes/master/known.toml"),
@@ -35,8 +35,7 @@ impl Config {
                     themes: Vec::new(),
                 },
             ],
-        };
-        config
+        }
     }
 
     pub fn save(config: &Self) -> Result<&Config> {
