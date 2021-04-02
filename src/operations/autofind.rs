@@ -1,7 +1,7 @@
 use crate::errors;
 use crate::models::Config;
 use clap::Clap;
-use colored::*;
+use colored::Colorize;
 use std::path::Path;
 use xdg::BaseDirectories;
 

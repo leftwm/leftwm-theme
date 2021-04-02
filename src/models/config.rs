@@ -1,6 +1,6 @@
 use crate::errors;
 use crate::errors::Result;
-use crate::models::theme::{ TempThemes, Theme};
+use crate::models::theme::{TempThemes, Theme};
 use log::{error, trace};
 use std::fs;
 use std::fs::File;
@@ -25,15 +25,15 @@ impl Config {
         let config = Config {
             repos: vec![
                 Repo {
-                    url: String::from("https://raw.githubusercontent.com/leftwm/leftwm-community-themes/master/known.toml"), 
-                    name: String::from("community"), 
+                    url: String::from("https://raw.githubusercontent.com/leftwm/leftwm-community-themes/master/known.toml"),
+                    name: String::from("community"),
                     themes: Vec::new()
                 },
-                Repo { 
-                    url: String::from("localhost"), 
-                    name: String::from("LOCAL"), 
-                    themes: Vec::new()
-                }
+                Repo {
+                    url: String::from("localhost"),
+                    name: String::from("LOCAL"),
+                    themes: Vec::new(),
+                },
             ],
         };
         config

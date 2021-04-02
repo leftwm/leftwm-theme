@@ -2,7 +2,7 @@ use crate::errors;
 use crate::models::{Config, Theme};
 use crate::utils::read::read_one;
 use clap::Clap;
-use colored::*;
+use colored::Colorize;
 use git2::Repository;
 use log::{error, trace};
 use std::io;

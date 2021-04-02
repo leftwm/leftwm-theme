@@ -1,7 +1,7 @@
 use crate::errors;
 use crate::models::{Config, LeftWm};
 use clap::Clap;
-use colored::*;
+use colored::Colorize;
 
 #[derive(Clap, Debug)]
 pub struct Status {}

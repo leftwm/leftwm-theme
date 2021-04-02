@@ -3,7 +3,7 @@ use crate::errors::LeftError;
 use crate::models::{Config, Theme};
 use crate::utils::read::yes_or_no;
 use clap::Clap;
-use colored::*;
+use colored::Colorize;
 use log::error;
 use std::fs;
 use std::path::Path;

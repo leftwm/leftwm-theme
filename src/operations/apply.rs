@@ -1,7 +1,7 @@
 use crate::errors;
 use crate::models::{Config, LeftWm, Theme};
 use clap::Clap;
-use colored::*;
+use colored::Colorize;
 use errors::LeftError;
 use log::{error, trace, warn};
 use std::os::unix;

@@ -3,7 +3,7 @@ use crate::errors::friendly_message;
 use crate::errors::Result;
 use crate::models::{Config, Theme};
 use clap::Clap;
-use colored::*;
+use colored::Colorize;
 use git2::Repository;
 use log::{error, trace};
 use std::io;
@@ -30,7 +30,7 @@ impl Install {
         trace!("{:?}", &mut config);
 
         let mut found = Theme::find_all(&mut config, &self.name)
-            .ok_or(friendly_message("Could not found find theme"))?;
+            .ok_or_else(|| friendly_message("Could not found find theme"))?;
 
         //ask the user to pick a matching theme
         let mut selected = choose_one(&mut found)?;
@@ -47,7 +47,7 @@ impl Install {
         let repo = theme
             .repository
             .as_ref()
-            .ok_or(friendly_message("Repository information missing for theme"))?;
+            .ok_or_else(|| friendly_message("Repository information missing for theme"))?;
         //build the path
         let mut dir = config.theme_dir()?;
         dir.push(&theme.name);
@@ -73,8 +73,9 @@ impl Install {
         let not_in_db = || friendly_message("Theme not found in db");
 
         // update the directory info of theme entry in the config
-        let source = theme.source.as_ref().ok_or(not_in_db())?;
-        let target_theme = Theme::find_mut(&mut config, &self.name, source).ok_or(not_in_db())?;
+        let source = theme.source.as_ref().ok_or_else(not_in_db)?;
+        let target_theme =
+            Theme::find_mut(&mut config, &self.name, source).ok_or_else(not_in_db)?;
         target_theme.directory = Some(dir);
         Config::save(&config)?;
 

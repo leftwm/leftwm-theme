@@ -1,4 +1,4 @@
-use crate::errors::*;
+use crate::errors::{LeftError, Result};
 use std::process::Command;
 use std::str;
 
