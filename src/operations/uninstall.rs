@@ -33,12 +33,10 @@ impl Uninstall {
                 )) {
                     fs::remove_dir_all(path)?;
                     match theme.source {
-                        Some(source) => {
-                            match Theme::find_mut(&mut config, self.name.clone(), source) {
-                                Some(target_theme) => target_theme.directory(None),
-                                None => return Err(LeftError::from("Could not find theme")),
-                            }
-                        }
+                        Some(source) => match Theme::find_mut(&mut config, &self.name, &source) {
+                            Some(target_theme) => target_theme.directory = None,
+                            None => return Err(LeftError::from("Could not find theme")),
+                        },
                         None => return Err(LeftError::from("No source found")),
                     }
                     Config::save(&config)?;

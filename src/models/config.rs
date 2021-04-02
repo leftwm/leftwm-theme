@@ -1,6 +1,6 @@
 use crate::errors;
 use crate::errors::Result;
-use crate::models::theme::{DependencyL, TempThemes, Theme};
+use crate::models::theme::{ TempThemes, Theme};
 use log::{error, trace};
 use std::fs;
 use std::fs::File;
@@ -22,26 +22,20 @@ pub struct Repo {
 
 impl Config {
     pub fn default() -> Self {
-        let mut config = Config {
-            repos: vec![Repo {url: String::from("https://raw.githubusercontent.com/leftwm/leftwm-community-themes/master/known.toml"), name: String::from("community"), themes: Vec::new()},Repo { url: String::from("localhost"), name: String::from("LOCAL"), themes: Vec::new()}],
+        let config = Config {
+            repos: vec![
+                Repo {
+                    url: String::from("https://raw.githubusercontent.com/leftwm/leftwm-community-themes/master/known.toml"), 
+                    name: String::from("community"), 
+                    themes: Vec::new()
+                },
+                Repo { 
+                    url: String::from("localhost"), 
+                    name: String::from("LOCAL"), 
+                    themes: Vec::new()
+                }
+            ],
         };
-        config.repos[0].themes.push(Theme {
-            name: "Orange Forest".to_string(),
-            description: Some("The orange forest theme".to_string()),
-            directory: None,
-            repository: Some(String::from(
-                "https://github.com/PVautour/leftwm-theme-orange-forest/",
-            )),
-            version: Some("0.0.1".to_string()),
-            leftwm_versions: Some("*".to_string()),
-            commit: Some("*".to_string()),
-            dependencies: Some(vec![DependencyL {
-                program: String::from("polybar"),
-                ..Default::default()
-            }]),
-            current: None,
-            source: None,
-        });
         config
     }
 
@@ -87,6 +81,12 @@ impl Config {
                 config.repos[lent - 1].themes.push(theme.clone())
             }
         }
+    }
+
+    pub fn theme_dir(&self) -> Result<std::path::PathBuf> {
+        let mut dir = BaseDirectories::with_prefix("leftwm")?.create_config_directory("")?;
+        dir.push("themes");
+        Ok(dir)
     }
 
     pub fn themes(&mut self, local: bool) -> Vec<Theme> {

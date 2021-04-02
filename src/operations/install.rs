@@ -1,5 +1,5 @@
 use crate::errors;
-use crate::errors::LeftError;
+use crate::errors::friendly_message;
 use crate::errors::Result;
 use crate::models::{Config, Theme};
 use clap::Clap;
@@ -8,7 +8,6 @@ use git2::Repository;
 use log::{error, trace};
 use std::io;
 use std::io::Write;
-use xdg::BaseDirectories;
 
 #[derive(Clap, Debug)]
 pub struct Install {
@@ -29,98 +28,87 @@ impl Install {
         println!("{}", "Looking for theme . . . ".bright_blue().bold());
         let mut config = Config::load().unwrap_or_default();
         trace!("{:?}", &mut config);
-        //try to find the theme or exit
-        match Theme::find_all(&mut config, self.name.clone()) {
-            Some(themes) => {
-                match choose_one(themes) {
-                    Ok(theme) => {
-                        trace!("{:?}", &theme);
-                        let repo = match theme.repository.as_ref() {
-                            Some(repo) => repo,
-                            None => {
-                                return Err(LeftError::from(
-                                    "Repository information missing for theme",
-                                ))
-                            }
-                        };
-                        let mut dir =
-                            BaseDirectories::with_prefix("leftwm")?.create_config_directory("")?;
-                        dir.push("themes");
-                        let themename = theme.name.clone();
-                        dir.push(&theme.name);
 
-                        //Tell git to get the repo and save it to the proper XDG path
-                        match Repository::clone(&repo, dir.clone()) {
-                            Ok(_) => {
-                                //add to config and save
-                                match theme.source {
-                                    Some(source) => {
-                                        match Theme::find_mut(
-                                            &mut config,
-                                            self.name.clone(),
-                                            source,
-                                        ) {
-                                            Some(target_theme) => {
-                                                target_theme.directory(dir.to_str())
-                                            }
-                                            None => {
-                                                return Err(LeftError::from(
-                                                    "Theme not found in db",
-                                                ))
-                                            }
-                                        }
-                                    }
-                                    None => return Err(LeftError::from("Theme not found in db")),
-                                }
-                                Config::save(&config)?;
-                                println!(
-                                    "{}{}{}{}{}{}",
-                                    "Downloaded theme ".bright_blue().bold(),
-                                    &themename.green(),
-                                    ". \nTo set as default, use ".bright_blue().bold(),
-                                    "leftwm-theme apply \"".bright_yellow().bold(),
-                                    &themename.bright_yellow().bold(),
-                                    "\"".bright_yellow().bold()
-                                );
-                                Ok(())
-                            }
-                            Err(e) => {
-                                error!(
-                                    "\n{} could not be installed because {:?}",
-                                    &themename,
-                                    e.message()
-                                );
-                                Err(errors::LeftError::from("Theme not installed"))
-                            }
-                        }
-                    }
-                    Err(_e) => {
-                        error!("\n Theme not found");
-                        Err(errors::LeftError::from("Theme not found"))
-                    }
-                }
-            }
-            None => {
-                error!("\n Theme not found");
-                Err(errors::LeftError::from("Theme not found"))
-            }
-        }
+        let mut found = Theme::find_all(&mut config, &self.name)
+            .ok_or(friendly_message("Could not found find theme"))?;
+
+        //ask the user to pick a matching theme
+        let mut selected = choose_one(&mut found)?;
+
+        //install the selected theme
+        self.install_selected_theme(&mut selected, config)?;
+
+        Ok(())
+    }
+
+    fn install_selected_theme(&self, theme: &mut Theme, config: Config) -> Result<()> {
+        trace!("{:?}", &theme);
+        //get the repo
+        let repo = theme
+            .repository
+            .as_ref()
+            .ok_or(friendly_message("Repository information missing for theme"))?;
+        //build the path
+        let mut dir = config.theme_dir()?;
+        dir.push(&theme.name);
+        //clone the repo
+        Repository::clone(&repo, dir.clone()).map_err(|err| {
+            let msg = format!(
+                "\n{} could not be installed because {:?} \n\n Theme not installed",
+                &theme.name,
+                err.message()
+            );
+            friendly_message(&msg)
+        })?;
+        //
+        self.add_to_config_and_save(theme, config, dir)
+    }
+
+    fn add_to_config_and_save(
+        &self,
+        theme: &mut Theme,
+        mut config: Config,
+        dir: std::path::PathBuf,
+    ) -> Result<()> {
+        let not_in_db = || friendly_message("Theme not found in db");
+
+        // update the directory info of theme entry in the config
+        let source = theme.source.as_ref().ok_or(not_in_db())?;
+        let target_theme = Theme::find_mut(&mut config, &self.name, source).ok_or(not_in_db())?;
+        target_theme.directory = Some(dir);
+        Config::save(&config)?;
+
+        print_theme_install_info(theme);
+
+        Ok(())
     }
 }
 
-pub fn choose_one(themes: Vec<Theme>) -> Result<Theme> {
+fn print_theme_install_info(theme: &Theme) {
+    //print the friendly info about the installed theme
+    println!(
+        "{}{}{}{}{}{}",
+        "Downloaded theme ".bright_blue().bold(),
+        &theme.name.green(),
+        ". \nTo set as default, use ".bright_blue().bold(),
+        "leftwm-theme apply \"".bright_yellow().bold(),
+        &theme.name.bright_yellow().bold(),
+        "\"".bright_yellow().bold()
+    );
+}
+
+fn choose_one(themes: &mut [Theme]) -> Result<&mut Theme> {
     if themes.len() == 1 {
-        Ok(themes[0].clone())
+        Ok(&mut themes[0])
     } else if themes.is_empty() {
-        error!("No themes have that name");
-        Err(errors::LeftError::from("No themes with that name"))
+        Err(friendly_message("No themes with that name were found"))
     } else {
         let idx = ask(&themes)?;
-        Ok(themes[idx].clone())
+        Ok(&mut themes[idx])
     }
 }
 
-pub fn ask(themes: &[Theme]) -> Result<usize> {
+fn ask(themes: &[Theme]) -> Result<usize> {
     #[allow(unused_assignments)]
     let mut return_index = Err(errors::LeftError::from("No themes available"));
     'outer: loop {
@@ -161,7 +149,7 @@ pub fn ask(themes: &[Theme]) -> Result<usize> {
     return_index
 }
 
-pub fn read_num() -> Result<usize> {
+fn read_num() -> Result<usize> {
     let mut words = String::new();
     io::stdin().read_line(&mut words).ok();
     let trimmed = words.trim();

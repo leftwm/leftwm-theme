@@ -1,10 +1,11 @@
 use crate::models::Config;
+use std::path::PathBuf;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Theme {
     pub name: String,
     pub description: Option<String>,
-    pub directory: Option<String>,
+    pub directory: Option<PathBuf>,
     pub repository: Option<String>,
     pub commit: Option<String>,
     pub version: Option<String>,
@@ -38,7 +39,7 @@ impl Default for DependencyL {
 }
 
 impl Theme {
-    pub fn new(name: String, description: Option<String>, directory: Option<String>) -> Self {
+    pub fn new(name: String, description: Option<String>, directory: Option<PathBuf>) -> Self {
         Theme {
             name,
             description,
@@ -76,7 +77,7 @@ impl Theme {
             .cloned()
     }
 
-    pub fn find_all(config: &mut Config, name: String) -> Option<Vec<Theme>> {
+    pub fn find_all(config: &mut Config, name: &str) -> Option<Vec<Theme>> {
         let (themes, _) = config
             .themes(false)
             .iter()
@@ -85,15 +86,15 @@ impl Theme {
         Some(themes)
     }
 
-    pub fn find_mut(config: &mut Config, name: String, repo_name: String) -> Option<&mut Theme> {
+    pub fn find_mut<'a>(
+        config: &'a mut Config,
+        name: &str,
+        repo_name: &str,
+    ) -> Option<&'a mut Theme> {
         match config.repos.iter_mut().find(|ref p| repo_name == p.name) {
             Some(reposit) => reposit.themes.iter_mut().find(|ref o| name == o.name),
             None => None,
         }
-    }
-
-    pub fn directory(&mut self, dir: Option<&str>) {
-        self.directory = dir.map(|dir| dir.to_string());
     }
 
     pub fn source(&mut self, name: String) -> &mut Theme {

@@ -75,7 +75,7 @@ impl Apply {
                         }
                     }
                     match theme.source {
-                        Some(source) => match Theme::find_mut(&mut config, theme.name, source) {
+                        Some(source) => match Theme::find_mut(&mut config, &theme.name, &source) {
                             Some(target_theme) => target_theme.current(true),
                             None => {
                                 error!("Theme not found");

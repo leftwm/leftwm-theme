@@ -1,5 +1,4 @@
 use crate::errors;
-use crate::errors::LeftError;
 use crate::models::{Config, Theme};
 use crate::utils::read::read_one;
 use clap::Clap;
@@ -42,13 +41,9 @@ impl New {
                 dir.push(&self.name);
                 match Repository::init(&dir) {
                     Ok(_repo) => {
-                        let directory_location = match dir.to_str() {
-                            Some(direct) => direct.to_string(),
-                            None => return Err(LeftError::from("Directory not given.")),
-                        };
                         Config::update_or_append(
                             &mut config,
-                            &Theme::new(self.name.clone(), None, Some(directory_location)),
+                            &Theme::new(self.name.clone(), None, Some(dir.clone())),
                             (&String::from("localhost"), &String::from("LOCAL")),
                         );
                         Config::save(&config)?;
