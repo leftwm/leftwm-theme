@@ -29,9 +29,8 @@ impl Install {
     /// Will error if config cannot be loaded, or saved.
     /// Will error if theme cannot be found.
     ///
-    pub fn exec(&self) -> Result<()> {
+    pub fn exec(&self, mut config: &mut Config) -> Result<()> {
         println!("{}", "Looking for theme . . . ".bright_blue().bold());
-        let mut config = Config::load().unwrap_or_default();
         trace!("{:?}", &mut config);
 
         let mut found = Theme::find_all(&mut config, &self.name)
@@ -46,7 +45,7 @@ impl Install {
         Ok(())
     }
 
-    fn install_selected_theme(&self, theme: &mut Theme, config: Config) -> Result<()> {
+    fn install_selected_theme(&self, theme: &mut Theme, config: &mut Config) -> Result<()> {
         trace!("{:?}", &theme);
         //get the repo
         let repo = theme
@@ -72,7 +71,7 @@ impl Install {
     fn add_to_config_and_save(
         &self,
         theme: &mut Theme,
-        mut config: Config,
+        mut config: &mut Config,
         dir: std::path::PathBuf,
     ) -> Result<()> {
         let not_in_db = || friendly_message("Theme not found in db");

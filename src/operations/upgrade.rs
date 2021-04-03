@@ -28,8 +28,7 @@ impl Upgrade {
     ///
     /// Panics are not expected. `theme.commit.as_ref().unwrap()` is within an if `is_some()`
     // Todo: allow passage of failed themes in either () or errors::LeftError
-    pub fn exec(&self) -> Result<(), errors::LeftError> {
-        let mut config = Config::load().unwrap_or_default();
+    pub fn exec(&self, config: &mut Config) -> Result<(), errors::LeftError> {
         //attempt to fetch new themes
         if !self.skipdbupdate {
             println!("{}", "Fetching known themes:".bright_blue().bold());
@@ -53,17 +52,17 @@ impl Upgrade {
         // Update themes
         println!("{}", "\nUpdating themes:".bright_blue().bold());
         let mut installed = 0;
-        for repo in config.repos {
+        for repo in &config.repos {
             trace!("Upgrading themes in repo {:?}", &repo.name);
             if repo.name == "LOCAL" {
                 continue;
             }
-            for theme in repo.themes {
+            for theme in &repo.themes {
                 let current = match theme.current {
                     Some(true) => "Current: ".bright_green().bold(),
                     _ => "".white(),
                 };
-                if let Some(theme_directory) = theme.directory {
+                if let Some(theme_directory) = &theme.directory {
                     println!(
                         "    Updating {}{}/{}: {}",
                         current,

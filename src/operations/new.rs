@@ -22,7 +22,7 @@ impl New {
     /// Will send an error if theme has a `/`.
     /// Will error if a theme with same name already exists.
     /// Will error if config cannot be loaded or saved properly.
-    pub fn exec(&self) -> Result<(), errors::LeftError> {
+    pub fn exec(&self, mut config: &mut Config) -> Result<(), errors::LeftError> {
         if self.name.contains('/') {
             error!(
                 "\n{} could not be created because a theme name should not contain '/'",
@@ -30,7 +30,6 @@ impl New {
             );
             return Err(errors::LeftError::from("Theme name not valid."));
         }
-        let mut config = Config::load().unwrap_or_default();
         if let Some(_theme) = Theme::find(&mut config, &self.name) {
             error!(
                 "\n{} could not be created because a theme with that name already exists",

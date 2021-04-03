@@ -15,13 +15,12 @@ impl Status {
     ///
     /// Will error if user flags -e AND no current theme is set in themes.toml.
     /// Will error if config cannot be loaded.
-    pub fn exec(&self) -> Result<(), errors::LeftError> {
+    pub fn exec(&self, config: &mut Config) -> Result<(), errors::LeftError> {
         println!(
             "{} {}",
             "Your LeftWM version is".bright_blue().bold(),
             LeftWm::get()?.version.bright_green().bold()
         );
-        let mut config = Config::load()?;
         let mut current = 0;
         let mut installed = 0;
         for theme in config.themes(false) {

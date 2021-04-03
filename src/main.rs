@@ -9,6 +9,7 @@ pub mod utils;
 use colored::Colorize;
 use errors::{LeftErrorKind, Result};
 
+use crate::models::Config;
 use crate::operations::{Apply, Install, List, New, Search, Status, Uninstall, Update, Upgrade};
 use clap::Clap;
 use log::error;
@@ -61,17 +62,21 @@ fn main() {
     }
 
     pretty_env_logger::init();
+
+    log::trace!("Loading configuration");
+    let mut config = Config::load().unwrap_or_default();
+
     let wrapper: Result<()> = match opt.operation {
         //Operation::AutoFind(args) => AutoFind::exec(&args),
-        Operation::Install(args) => Install::exec(&args),
-        Operation::Uninstall(args) => Uninstall::exec(&args),
-        Operation::List(args) => List::exec(&args),
-        Operation::Apply(args) => Apply::exec(&args),
-        Operation::Status(args) => Status::exec(&args),
-        Operation::New(args) => New::exec(&args),
-        Operation::Upgrade(args) => Upgrade::exec(&args),
-        Operation::Update(args) => Update::exec(&args),
-        Operation::Search(args) => Search::exec(&args),
+        Operation::Install(args) => Install::exec(&args, &mut config),
+        Operation::Uninstall(args) => Uninstall::exec(&args, &mut config),
+        Operation::List(args) => List::exec(&args, &mut config),
+        Operation::Apply(args) => Apply::exec(&args, &mut config),
+        Operation::Status(args) => Status::exec(&args, &mut config),
+        Operation::New(args) => New::exec(&args, &mut config),
+        Operation::Upgrade(args) => Upgrade::exec(&args, &mut config),
+        Operation::Update(args) => Update::exec(&args, &mut config),
+        Operation::Search(args) => Search::exec(&args, &mut config),
     };
 
     if let Err(e) = wrapper {

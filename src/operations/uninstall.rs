@@ -17,12 +17,11 @@ impl Uninstall {
     /// # Errors
     /// Will error if config cannot be saved.
     /// Will error if cannot remove directory.
-    pub fn exec(&self) -> Result<(), errors::LeftError> {
+    pub fn exec(&self, mut config: &mut Config) -> Result<(), errors::LeftError> {
         println!(
             "{}",
             "Looking for theme to uninstall . . . ".bright_blue().bold()
         );
-        let mut config = Config::load().unwrap_or_default();
         let theme = match Theme::find_installed(&mut config, &self.name) {
             Some(target_theme) => target_theme,
             None => return Err(LeftError::from("Theme not found")),

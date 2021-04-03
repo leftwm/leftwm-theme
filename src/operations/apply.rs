@@ -37,9 +37,8 @@ impl Apply {
     /// Returns an error if symlink cannot be made.
     /// Returns an error if theme not found.
     /// Returns an error if leftwm-worker cannot be killed.
-    pub fn exec(&self) -> Result<(), errors::LeftError> {
+    pub fn exec(&self, mut config: &mut Config) -> Result<(), errors::LeftError> {
         trace!("Applying theme named {:?}", &self.name);
-        let mut config = Config::load().unwrap_or_default();
         println!(
             "{}{}{}",
             "Setting ".bright_blue().bold(),

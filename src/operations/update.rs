@@ -1,4 +1,5 @@
 use crate::errors;
+use crate::models::Config;
 use clap::Clap;
 use colored::Colorize;
 use log::trace;
@@ -20,9 +21,7 @@ impl Update {
     /// Will error if config cannot be saved
     /// Will error if upstream known.toml cannot be retrieved.
     /// Will error if TOML files themes.toml or known.toml cannot be parsed.
-    pub fn exec(&self) -> Result<(), errors::LeftError> {
-        use crate::models::Config;
-        let mut config = Config::load().unwrap_or_default();
+    pub fn exec(&self, config: &mut Config) -> Result<(), errors::LeftError> {
         if !self.no_fetch {
             println!("{}", "Fetching themes . . . ".bright_blue().bold());
             //attempt to fetch new themes
