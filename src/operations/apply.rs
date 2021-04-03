@@ -1,5 +1,5 @@
-use crate::errors;
-use crate::models::{Config, LeftWm, Theme};
+use crate::models::{Config, Theme};
+use crate::{errors, utils};
 use clap::Clap;
 use colored::Colorize;
 use errors::LeftError;
@@ -30,6 +30,13 @@ pub struct Apply {
 }
 
 impl Apply {
+    /// # Errors
+    ///
+    /// Returns an error if config cannot be loaded / saved
+    /// Returns an error if `BaseDirectory` not set.
+    /// Returns an error if symlink cannot be made.
+    /// Returns an error if theme not found.
+    /// Returns an error if leftwm-worker cannot be killed.
     pub fn exec(&self) -> Result<(), errors::LeftError> {
         trace!("Applying theme named {:?}", &self.name);
         let mut config = Config::load().unwrap_or_default();
@@ -43,77 +50,65 @@ impl Apply {
         dir.push("themes");
         dir.push("current");
         trace!("{:?}", &dir);
-        match Theme::find(&mut config, self.name.clone()) {
-            Some(theme) => match theme.directory.as_ref() {
-                Some(theme_dir) => {
-                    //Do all necessary checks
-                    if !checks(&theme) && !self.override_checks {
-                        error!("Not all prerequirements passed");
-                        return Err(errors::LeftError::from("PreReqs"));
-                    }
-                    let path = Path::new(theme_dir);
-                    trace!("{:?}", &path);
-                    match fs::remove_dir_all(&dir) {
-                        Ok(_) => {
-                            warn!("Removed old current directory");
-                        }
-                        Err(_) => {
-                            trace!("Nothing needed removed");
-                        }
-                    }
-                    unix::fs::symlink(path, dir)?;
-                    println!(
-                        "{}{}{}",
-                        "Applying ".bright_blue().bold(),
-                        &self.name.bright_green().bold(),
-                        " as default theme.".bright_blue().bold()
-                    );
-                    trace!("{:?}", "Altering config");
-                    for repo in &mut config.repos {
-                        for theme in &mut repo.themes {
-                            theme.current = Some(false);
-                        }
-                    }
-                    match theme.source {
-                        Some(source) => match Theme::find_mut(&mut config, &theme.name, &source) {
-                            Some(target_theme) => target_theme.current(true),
-                            None => {
-                                error!("Theme not found");
-                                return Err(LeftError::from("Theme not found"));
-                            }
-                        },
-                        None => {
-                            error!("Theme does not have a source");
-                        }
-                    }
-                    Config::save(&config)?;
-                    if !self.no_reset {
-                        println!("{}", "Reloading LeftWM.".bright_blue().bold());
-                        Command::new("pkill").arg("leftwm-worker").output()?;
-                    }
-                    Ok(())
+        if let Some(theme) = Theme::find(&mut config, &self.name) {
+            if let Some(theme_dir) = theme.directory.as_ref() {
+                //Do all necessary checks
+                if !checks(&theme) && !self.override_checks {
+                    error!("Not all prerequirements passed");
+                    return Err(errors::LeftError::from("PreReqs"));
                 }
-                None => {
-                    error!(
-                        "\nTheme not installed. Try installing it with `leftwm-theme add {}`.",
-                        &self.name
-                    );
-                    Err(errors::LeftError::from("Theme not installed"))
+                let path = Path::new(theme_dir);
+                trace!("{:?}", &path);
+                match fs::remove_dir_all(&dir) {
+                    Ok(_) => {
+                        warn!("Removed old current directory");
+                    }
+                    Err(_) => {
+                        trace!("Nothing needed removed");
+                    }
                 }
-            },
-            None => {
-                error!("\n Theme not installed. Try checking your spelling?");
+                unix::fs::symlink(path, dir)?;
+                println!(
+                    "{}{}{}",
+                    "Applying ".bright_blue().bold(),
+                    &self.name.bright_green().bold(),
+                    " as default theme.".bright_blue().bold()
+                );
+                trace!("{:?}", "Altering config");
+                for repo in &mut config.repos {
+                    for theme in &mut repo.themes {
+                        theme.current = Some(false);
+                    }
+                }
+                if let Some(source) = theme.source {
+                    if let Some(target_theme) = Theme::find_mut(&mut config, &theme.name, &source) {
+                        target_theme.current(true)
+                    } else {
+                        error!("Theme not found");
+                        return Err(LeftError::from("Theme not found"));
+                    }
+                } else {
+                    error!("Theme does not have a source");
+                }
+
+                Config::save(&config)?;
+                if !self.no_reset {
+                    println!("{}", "Reloading LeftWM.".bright_blue().bold());
+                    Command::new("pkill").arg("leftwm-worker").output()?;
+                }
+                Ok(())
+            } else {
+                error!(
+                    "\nTheme not installed. Try installing it with `leftwm-theme add {}`.",
+                    &self.name
+                );
                 Err(errors::LeftError::from("Theme not installed"))
             }
+        } else {
+            error!("\n Theme not installed. Try checking your spelling?");
+            Err(errors::LeftError::from("Theme not installed"))
         }
     }
-}
-
-pub fn check_versions(vstring: String) -> Result<bool, errors::LeftError> {
-    use semver::{Version, VersionReq};
-    let lwmv = LeftWm::get()?;
-    let requirements = VersionReq::parse(&vstring)?;
-    Ok(requirements.matches(&Version::parse(&lwmv.version)?))
 }
 
 pub fn checks(theme: &Theme) -> bool {
@@ -131,17 +126,16 @@ pub fn checks(theme: &Theme) -> bool {
         }
     }
     trace!("Checking LeftWM version.");
-    match check_versions(
-        theme
+    if let Ok(true) = utils::versions::check(
+        &theme
             .leftwm_versions
             .clone()
             .unwrap_or_else(|| "*".to_string()),
     ) {
-        Ok(true) => true,
-        _ => {
-            error!("This theme is incompatible with the installed version of LeftWM.");
-            false
-        }
+        true
+    } else {
+        error!("This theme is incompatible with the installed version of LeftWM.");
+        false
     }
 }
 

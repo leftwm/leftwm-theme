@@ -1,6 +1,7 @@
 use crate::models::Config;
 use std::path::PathBuf;
 
+/// Contains information about a theme contained within themes.toml (or known.toml upstream).
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Theme {
     pub name: String,
@@ -16,11 +17,13 @@ pub struct Theme {
     pub source: Option<String>,
 }
 
+/// Contains a vector of themes used for processing.
 #[derive(Debug, Deserialize)]
 pub struct TempThemes {
     pub theme: Vec<Theme>,
 }
 
+/// Contains information pertaining to a program dependency (name, required/optional, package).
 #[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct DependencyL {
     pub program: String,
@@ -39,9 +42,10 @@ impl Default for DependencyL {
 }
 
 impl Theme {
-    pub fn new(name: String, description: Option<String>, directory: Option<PathBuf>) -> Self {
+    #[must_use]
+    pub fn new(name: &str, description: Option<String>, directory: Option<PathBuf>) -> Self {
         Theme {
-            name,
+            name: name.to_string(),
             description,
             directory,
             repository: None,
@@ -54,6 +58,7 @@ impl Theme {
         }
     }
 
+    #[must_use]
     pub fn is_installed(&self) -> bool {
         match &self.directory {
             Some(_dir) => true,
@@ -61,7 +66,7 @@ impl Theme {
         }
     }
 
-    pub fn find(config: &mut Config, name: String) -> Option<Theme> {
+    pub fn find(config: &mut Config, name: &str) -> Option<Theme> {
         config
             .themes(false)
             .iter()
@@ -69,7 +74,7 @@ impl Theme {
             .cloned()
     }
 
-    pub fn find_installed(config: &mut Config, name: String) -> Option<Theme> {
+    pub fn find_installed(config: &mut Config, name: &str) -> Option<Theme> {
         config
             .themes(false)
             .iter()
@@ -103,9 +108,6 @@ impl Theme {
     }
 
     pub fn current(&mut self, currency: bool) {
-        self.current = match currency {
-            true => Some(true),
-            false => None,
-        }
+        self.current = if currency { Some(true) } else { None }
     }
 }

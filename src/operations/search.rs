@@ -16,6 +16,9 @@ pub struct Search {
 }
 
 impl Search {
+    /// # Errors
+    ///
+    /// No errors expected.
     pub fn exec(&self) -> Result<(), LeftError> {
         // Load the configuration
         println!(

@@ -1,7 +1,7 @@
-use crate::errors;
 use crate::errors::friendly_message;
 use crate::errors::Result;
 use crate::models::{Config, Theme};
+use crate::{errors, utils};
 use clap::Clap;
 use colored::Colorize;
 use git2::Repository;
@@ -24,6 +24,11 @@ pub struct Install {
 }
 
 impl Install {
+    /// # Errors
+    ///
+    /// Will error if config cannot be loaded, or saved.
+    /// Will error if theme cannot be found.
+    ///
     pub fn exec(&self) -> Result<()> {
         println!("{}", "Looking for theme . . . ".bright_blue().bold());
         let mut config = Config::load().unwrap_or_default();
@@ -49,7 +54,7 @@ impl Install {
             .as_ref()
             .ok_or_else(|| friendly_message("Repository information missing for theme"))?;
         //build the path
-        let mut dir = config.theme_dir()?;
+        let mut dir = utils::dir::theme()?;
         dir.push(&theme.name);
         //clone the repo
         Repository::clone(&repo, dir.clone()).map_err(|err| {
@@ -98,6 +103,9 @@ fn print_theme_install_info(theme: &Theme) {
     );
 }
 
+/// # Errors
+///
+/// Will error if user does not return valid theme to ask or ask otherwise fails
 fn choose_one(themes: &mut [Theme]) -> Result<&mut Theme> {
     if themes.len() == 1 {
         Ok(&mut themes[0])
@@ -109,6 +117,9 @@ fn choose_one(themes: &mut [Theme]) -> Result<&mut Theme> {
     }
 }
 
+/// # Errors
+///
+/// Should not error.
 fn ask(themes: &[Theme]) -> Result<usize> {
     #[allow(unused_assignments)]
     let mut return_index = Err(errors::LeftError::from("No themes available"));
@@ -137,7 +148,7 @@ fn ask(themes: &[Theme]) -> Result<usize> {
             );
         }
         print!("{}", "=>".bright_yellow().bold());
-        io::stdout().flush().unwrap();
+        io::stdout().flush().unwrap_or_default();
         let val = read_num();
         if let Ok(index) = val {
             if index < themes.len() {
@@ -150,6 +161,9 @@ fn ask(themes: &[Theme]) -> Result<usize> {
     return_index
 }
 
+/// # Errors
+///
+/// Will error if unable to parse a number
 fn read_num() -> Result<usize> {
     let mut words = String::new();
     io::stdin().read_line(&mut words).ok();
