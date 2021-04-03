@@ -5,21 +5,29 @@ use colored::Colorize;
 use log::trace;
 
 #[derive(Clap, Debug)]
-pub struct List {}
+pub struct List {
+    /// Names only
+    #[clap(short = 'n', long)]
+    pub names: bool,
+}
 
 impl List {
-    pub fn exec(&self) -> Result<(), errors::LeftError> {
-        let config = Config::load().unwrap_or_default();
-        println!("{}", "\nInstalled themes:".blue().bold());
+    /// # Errors
+    ///
+    /// Should not error.
+    pub fn exec(&self, config: &mut Config) -> Result<(), errors::LeftError> {
+        if !self.names {
+            println!("{}", "\nInstalled themes:".blue().bold());
+        }
         let mut installed = 0;
-        for repo in config.repos {
+        for repo in &config.repos {
             trace!("Printing themes from {}", &repo.name);
-            for theme in repo.themes {
+            for theme in &repo.themes {
                 let current = match theme.current {
                     Some(true) => "Current: ".bright_yellow().bold(),
                     _ => "".white(),
                 };
-                if theme.directory.is_some() {
+                if theme.directory.is_some() && !self.names {
                     println!(
                         "    {}{}/{}: {}",
                         current,
@@ -30,6 +38,9 @@ impl List {
                             .as_ref()
                             .unwrap_or(&"A LeftWM theme".to_string())
                     );
+                    installed += 1;
+                } else if theme.directory.is_some() && self.names {
+                    println!("{}", theme.name);
                     installed += 1;
                 }
             }

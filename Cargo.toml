@@ -1,6 +1,6 @@
 [package]
 name = "leftwm-theme"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Lex Childs <lexchilds@gmail.com>", "Hitesh Paul <git@hiteshpaul.com>", "Mautamu <mautam@usa.com>"]
 description = "A theme mangager for LeftWM"
 edition = "2018"

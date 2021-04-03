@@ -8,11 +8,13 @@ use std::io::Write;
 use std::path::Path;
 use xdg::BaseDirectories;
 
+/// Contains a vector of all global repositories.
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Config {
     pub repos: Vec<Repo>,
 }
 
+/// Contains global repository information. Akin to known.toml or themes.toml
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Repo {
     pub url: String,
@@ -21,6 +23,7 @@ pub struct Repo {
 }
 
 impl Config {
+    #[must_use]
     pub fn default() -> Self {
         Config {
             repos: vec![
@@ -38,54 +41,56 @@ impl Config {
         }
     }
 
+    /// # Errors
+    ///
+    /// Errors if toml cannot be obtained for the themes.toml file
+    /// Errors if the `BaseDirectory` is not set (no systemd)
+    /// Errors if no file can be saved
     pub fn save(config: &Self) -> Result<&Config> {
         let path = BaseDirectories::with_prefix("leftwm")?;
         let config_filename = path.place_config_file("themes.toml")?;
-        let toml = toml::to_string(&config).unwrap();
+        let toml = toml::to_string(&config)?;
         let mut file = File::create(&config_filename)?;
         file.write_all(&toml.as_bytes())?;
         Ok(config)
     }
 
     pub fn update_or_append(config: &mut Self, theme: &Theme, repo: (&String, &String)) {
-        match config
+        #![allow(clippy::option_if_let_else)]
+        if let Some(target_repo) = config
             .repos
             .iter_mut()
             .find(|ref p| repo.1.clone() == p.name)
         {
-            Some(rrepo) => {
-                match rrepo.themes.iter_mut().find(|ref o| theme.name == o.name) {
-                    Some(rtheme) => {
-                        // If there is one, update values
-                        rtheme.repository = theme.repository.clone();
-                        rtheme.description = theme.description.clone();
-                        rtheme.commit = theme.commit.clone();
-                        rtheme.version = theme.version.clone();
-                        rtheme.leftwm_versions = theme.leftwm_versions.clone();
-                        rtheme.dependencies = theme.dependencies.clone();
-                    }
-                    None => {
-                        rrepo.themes.push(theme.clone());
-                    }
+            match target_repo
+                .themes
+                .iter_mut()
+                .find(|ref o| theme.name == o.name)
+            {
+                Some(target_theme) => {
+                    // If there is one, update values
+                    target_theme.repository = theme.repository.clone();
+                    target_theme.description = theme.description.clone();
+                    target_theme.commit = theme.commit.clone();
+                    target_theme.version = theme.version.clone();
+                    target_theme.leftwm_versions = theme.leftwm_versions.clone();
+                    target_theme.dependencies = theme.dependencies.clone();
+                }
+                None => {
+                    target_repo.themes.push(theme.clone());
                 }
             }
-            // o/w insert a new leaf at the end
-            None => {
-                config.repos.push(Repo {
-                    url: repo.0.clone(),
-                    name: repo.1.clone(),
-                    themes: Vec::new(),
-                });
-                let lent = config.repos.len();
-                config.repos[lent - 1].themes.push(theme.clone())
-            }
         }
-    }
-
-    pub fn theme_dir(&self) -> Result<std::path::PathBuf> {
-        let mut dir = BaseDirectories::with_prefix("leftwm")?.create_config_directory("")?;
-        dir.push("themes");
-        Ok(dir)
+        // o/w insert a new leaf at the end
+        else {
+            config.repos.push(Repo {
+                url: repo.0.clone(),
+                name: repo.1.clone(),
+                themes: Vec::new(),
+            });
+            let lent = config.repos.len();
+            config.repos[lent - 1].themes.push(theme.clone())
+        }
     }
 
     pub fn themes(&mut self, local: bool) -> Vec<Theme> {
@@ -95,12 +100,18 @@ impl Config {
                 continue;
             }
             for theme in &repo.themes {
-                themes.push(theme.clone().source(repo.name.clone()).to_owned());
+                themes.push(theme.clone().source(repo.name.clone()).clone());
             }
         }
         themes
     }
 
+    /// # Errors
+    ///
+    /// Will error if `BaseDirectory` not set (no systemd)
+    /// Will error if themes.toml doesn't exist
+    /// Will error if themes.toml has invalid content.
+    /// Will error if themes.toml cannot be written to.
     pub fn load() -> Result<Config> {
         let path = BaseDirectories::with_prefix("leftwm")?;
         let config_filename = path.place_config_file("themes.toml")?;
@@ -116,7 +127,7 @@ impl Config {
             }
         } else {
             let config = Config::default();
-            let toml = toml::to_string(&config).unwrap();
+            let toml = toml::to_string(&config)?;
             let mut file = File::create(&config_filename)?;
             file.write_all(&toml.as_bytes())?;
             Ok(config)
@@ -125,6 +136,9 @@ impl Config {
 }
 
 impl Repo {
+    /// # Errors
+    ///
+    /// No errors should occur.
     pub fn compare(&mut self, theme_wrap: TempThemes) -> Result<&Repo> {
         let themes = theme_wrap.theme;
         trace!("Comparing themes");
@@ -143,14 +157,14 @@ impl Repo {
             .iter_mut()
             .find(|ref p| theme.name.clone() == p.name.clone())
         {
-            Some(rtheme) => {
+            Some(target_theme) => {
                 // If there is one, update values
-                rtheme.repository = theme.repository.clone();
-                rtheme.description = theme.description.clone();
-                rtheme.commit = theme.commit.clone();
-                rtheme.version = theme.version.clone();
-                rtheme.leftwm_versions = theme.leftwm_versions.clone();
-                rtheme.dependencies = theme.dependencies.clone();
+                target_theme.repository = theme.repository.clone();
+                target_theme.description = theme.description.clone();
+                target_theme.commit = theme.commit.clone();
+                target_theme.version = theme.version.clone();
+                target_theme.leftwm_versions = theme.leftwm_versions.clone();
+                target_theme.dependencies = theme.dependencies.clone();
             }
             // o/w insert a new leaf at the end
             None => {

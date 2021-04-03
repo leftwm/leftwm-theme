@@ -4,16 +4,23 @@ use clap::Clap;
 use colored::Colorize;
 
 #[derive(Clap, Debug)]
-pub struct Status {}
+pub struct Status {
+    /// Error if not set
+    #[clap(short = 'e', long)]
+    pub error: bool,
+}
 
 impl Status {
-    pub fn exec(&self) -> Result<(), errors::LeftError> {
+    /// # Errors
+    ///
+    /// Will error if user flags -e AND no current theme is set in themes.toml.
+    /// Will error if config cannot be loaded.
+    pub fn exec(&self, config: &mut Config) -> Result<(), errors::LeftError> {
         println!(
             "{} {}",
             "Your LeftWM version is".bright_blue().bold(),
             LeftWm::get()?.version.bright_green().bold()
         );
-        let mut config = Config::load()?;
         let mut current = 0;
         let mut installed = 0;
         for theme in config.themes(false) {
@@ -53,7 +60,10 @@ impl Status {
                 "A theme may be set, but LeftWM theme doesn't know about it.\n    If it is a local theme, try leftwm-theme new themename.\n    If it is a repo theme, try leftwm-theme install themename"
                     .bright_yellow()
                     .bold()
-            )
+            );
+            if self.error {
+                return Err(errors::friendly_message("Error! No theme set."));
+            }
         }
         Ok(())
     }

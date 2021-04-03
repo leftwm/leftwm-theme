@@ -6,6 +6,7 @@ pub struct LeftError {
     pub inner: LeftErrorKind,
 }
 
+#[must_use]
 pub fn friendly_message(msg: &str) -> LeftError {
     LeftError {
         inner: LeftErrorKind::UserFriendlyError(msg.to_string()),
@@ -18,6 +19,7 @@ pub enum LeftErrorKind {
     IoError(std::io::Error),
     XdgBaseDirError(xdg::BaseDirectoriesError),
     TomlParse(toml::de::Error),
+    TomlSerialize(toml::ser::Error),
     ReqwestError(reqwest::Error),
     StreamError(),
     NoneError(),
@@ -39,15 +41,17 @@ impl fmt::Display for LeftErrorKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             LeftErrorKind::SerdeParse(ref err) => write!(f, "{}", err),
-            LeftErrorKind::UserFriendlyError(ref err) => write!(f, "{}", err),
+            LeftErrorKind::UserFriendlyError(ref err) | LeftErrorKind::Generic(ref err) => {
+                write!(f, "{}", err)
+            }
             LeftErrorKind::IoError(ref err) => write!(f, "{}", err),
             LeftErrorKind::XdgBaseDirError(ref err) => write!(f, "{}", err),
             LeftErrorKind::TomlParse(ref err) => write!(f, "{}", err),
+            LeftErrorKind::TomlSerialize(ref err) => write!(f, "{}", err),
             LeftErrorKind::StreamError() => write!(f, "Stream Error"),
             LeftErrorKind::NoneError() => write!(f, "None Error"),
             LeftErrorKind::ReqwestError(ref err) => write!(f, "Request Error: {}", err),
             LeftErrorKind::GitError(ref err) => write!(f, "{}", err),
-            LeftErrorKind::Generic(ref err) => write!(f, "{}", err),
             LeftErrorKind::ParseIntError(ref err) => write!(f, "{}", err),
             LeftErrorKind::ReqParseError(ref err) => write!(f, "{}", err),
             LeftErrorKind::SemVerError(ref err) => write!(f, "{}", err),
@@ -82,6 +86,12 @@ impl From<xdg::BaseDirectoriesError> for LeftError {
 impl From<toml::de::Error> for LeftError {
     fn from(inner: toml::de::Error) -> LeftError {
         LeftErrorKind::TomlParse(inner).into()
+    }
+}
+
+impl From<toml::ser::Error> for LeftError {
+    fn from(inner: toml::ser::Error) -> LeftError {
+        LeftErrorKind::TomlSerialize(inner).into()
     }
 }
 

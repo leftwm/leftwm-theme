@@ -16,7 +16,10 @@ pub struct Search {
 }
 
 impl Search {
-    pub fn exec(&self) -> Result<(), LeftError> {
+    /// # Errors
+    ///
+    /// No errors expected.
+    pub fn exec(&self, config: &mut Config) -> Result<(), LeftError> {
         // Load the configuration
         println!(
             "{}",
@@ -24,9 +27,8 @@ impl Search {
                 .bright_blue()
                 .bold()
         );
-        let mut config = Config::load().unwrap_or_default();
         // Iterate over the different themes, if the distance
-        for theme in config.themes(false) {
+        for theme in &config.themes(false) {
             trace!(
                 "Theme: {}, Distance:{}",
                 &theme.name,
@@ -44,8 +46,13 @@ impl Search {
                 println!(
                     "   {}{}/{}: {}{}",
                     current,
-                    theme.source.unwrap_or_default().bright_magenta().bold(),
-                    theme.name.bright_green().bold(),
+                    theme
+                        .source
+                        .clone()
+                        .unwrap_or_default()
+                        .bright_magenta()
+                        .bold(),
+                    theme.name.clone().bright_green().bold(),
                     theme
                         .description
                         .as_ref()
