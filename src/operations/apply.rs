@@ -1,7 +1,7 @@
 use crate::errors;
 use crate::models::{Config, LeftWm, Theme};
 use clap::Clap;
-use colored::*;
+use colored::Colorize;
 use errors::LeftError;
 use log::{error, trace, warn};
 use std::os::unix;
@@ -75,7 +75,7 @@ impl Apply {
                         }
                     }
                     match theme.source {
-                        Some(source) => match Theme::find_mut(&mut config, theme.name, source) {
+                        Some(source) => match Theme::find_mut(&mut config, &theme.name, &source) {
                             Some(target_theme) => target_theme.current(true),
                             None => {
                                 error!("Theme not found");

@@ -3,7 +3,13 @@ pub type Result<T> = std::result::Result<T, LeftError>;
 
 #[derive(Debug)]
 pub struct LeftError {
-    inner: LeftErrorKind,
+    pub inner: LeftErrorKind,
+}
+
+pub fn friendly_message(msg: &str) -> LeftError {
+    LeftError {
+        inner: LeftErrorKind::UserFriendlyError(msg.to_string()),
+    }
 }
 
 #[derive(Debug)]
@@ -15,6 +21,7 @@ pub enum LeftErrorKind {
     ReqwestError(reqwest::Error),
     StreamError(),
     NoneError(),
+    UserFriendlyError(String),
     GitError(git2::Error),
     Generic(String),
     ParseIntError(core::num::ParseIntError),
@@ -32,6 +39,7 @@ impl fmt::Display for LeftErrorKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             LeftErrorKind::SerdeParse(ref err) => write!(f, "{}", err),
+            LeftErrorKind::UserFriendlyError(ref err) => write!(f, "{}", err),
             LeftErrorKind::IoError(ref err) => write!(f, "{}", err),
             LeftErrorKind::XdgBaseDirError(ref err) => write!(f, "{}", err),
             LeftErrorKind::TomlParse(ref err) => write!(f, "{}", err),

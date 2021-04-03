@@ -1,4 +1,4 @@
-use crate::errors::*;
+use crate::errors::{LeftError, Result};
 use std::process::Command;
 use std::str;
 
@@ -9,14 +9,9 @@ pub struct LeftWm {
 
 impl LeftWm {
     pub fn get() -> Result<Self> {
-        match str::from_utf8(&Command::new("leftwm-state").arg("-V").output()?.stdout) {
-            Ok(output) => Ok(LeftWm {
-                version: output.replace("LeftWM State ", "").replace("\n", ""),
-            }),
-            Err(_) => {
-                log::error!("Could not get LeftWM version. Is LeftWM installed?");
-                Err(LeftError::from("UTF Error"))
-            }
-        }
+        let version_raw = &Command::new("leftwm-state").arg("-V").output()?.stdout;
+        let version_utf8 = str::from_utf8(version_raw).map_err(|_| LeftError::from("UTF Error"))?;
+        let version = version_utf8.replace("LeftWM State ", "").replace("\n", "");
+        Ok(LeftWm { version })
     }
 }

@@ -1,6 +1,6 @@
 use crate::errors;
 use clap::Clap;
-use colored::*;
+use colored::Colorize;
 use log::trace;
 
 #[derive(Clap, Debug)]

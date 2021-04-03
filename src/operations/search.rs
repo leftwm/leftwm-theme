@@ -1,7 +1,7 @@
 use crate::errors;
 use crate::models::Config;
 use clap::Clap;
-use colored::*;
+use colored::Colorize;
 use edit_distance::edit_distance;
 use errors::LeftError;
 use log::trace;

@@ -6,6 +6,9 @@ pub mod models;
 pub mod operations;
 pub mod utils;
 
+use colored::Colorize;
+use errors::{LeftErrorKind, Result};
+
 use crate::operations::{
     Apply, AutoFind, Install, List, New, Search, Status, Uninstall, Update, Upgrade,
 };
@@ -53,21 +56,14 @@ fn main() {
     let opt = Opt::parse();
 
     match opt.verbose {
-        0 => {
-            env::set_var("RUST_LOG", "error");
-        }
-        1 => {
-            env::set_var("RUST_LOG", "info");
-        }
-        2 => {
-            env::set_var("RUST_LOG", "debug");
-        }
-        _ => {
-            env::set_var("RUST_LOG", "trace");
-        }
+        0 => env::set_var("RUST_LOG", "warn"),
+        1 => env::set_var("RUST_LOG", "info"),
+        2 => env::set_var("RUST_LOG", "debug"),
+        _ => env::set_var("RUST_LOG", "trace"),
     }
+
     pretty_env_logger::init();
-    let wrapper = match opt.operation {
+    let wrapper: Result<()> = match opt.operation {
         Operation::AutoFind(args) => AutoFind::exec(&args),
         Operation::Install(args) => Install::exec(&args),
         Operation::Uninstall(args) => Uninstall::exec(&args),
@@ -79,10 +75,11 @@ fn main() {
         Operation::Update(args) => Update::exec(&args),
         Operation::Search(args) => Search::exec(&args),
     };
-    match wrapper {
-        Ok(_) => {}
-        Err(_e) => {
-            error!("Operation did not complete successfully");
+
+    if let Err(e) = wrapper {
+        match e.inner {
+            LeftErrorKind::UserFriendlyError(msg) => println!("{}", &msg.bright_red()),
+            _ => error!("Operation did not complete successfully"),
         }
     }
 }
