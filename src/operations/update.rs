@@ -39,7 +39,7 @@ impl Update {
             Config::save(&config)?;
         }
 
-        if !self.no_fetch {
+        if !self.no_list {
             //List themes
             println!("{}", "\nAvailable themes:".bright_blue().bold());
 
