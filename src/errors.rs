@@ -27,8 +27,7 @@ pub enum LeftErrorKind {
     GitError(git2::Error),
     Generic(String),
     ParseIntError(core::num::ParseIntError),
-    ReqParseError(semver::ReqParseError),
-    SemVerError(semver::SemVerError),
+    SemVerError(semver::Error),
 }
 
 impl fmt::Display for LeftError {
@@ -53,7 +52,6 @@ impl fmt::Display for LeftErrorKind {
             LeftErrorKind::ReqwestError(ref err) => write!(f, "Request Error: {}", err),
             LeftErrorKind::GitError(ref err) => write!(f, "{}", err),
             LeftErrorKind::ParseIntError(ref err) => write!(f, "{}", err),
-            LeftErrorKind::ReqParseError(ref err) => write!(f, "{}", err),
             LeftErrorKind::SemVerError(ref err) => write!(f, "{}", err),
         }
     }
@@ -119,14 +117,8 @@ impl From<core::num::ParseIntError> for LeftError {
     }
 }
 
-impl From<semver::SemVerError> for LeftError {
-    fn from(inner: semver::SemVerError) -> LeftError {
+impl From<semver::Error> for LeftError {
+    fn from(inner: semver::Error) -> LeftError {
         LeftErrorKind::SemVerError(inner).into()
-    }
-}
-
-impl From<semver::ReqParseError> for LeftError {
-    fn from(inner: semver::ReqParseError) -> LeftError {
-        LeftErrorKind::ReqParseError(inner).into()
     }
 }
