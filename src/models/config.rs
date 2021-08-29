@@ -57,16 +57,8 @@ impl Config {
 
     pub fn update_or_append(config: &mut Self, theme: &Theme, repo: (&String, &String)) {
         #![allow(clippy::option_if_let_else)]
-        if let Some(target_repo) = config
-            .repos
-            .iter_mut()
-            .find(|p| repo.1.clone() == p.name)
-        {
-            match target_repo
-                .themes
-                .iter_mut()
-                .find(|o| theme.name == o.name)
-            {
+        if let Some(target_repo) = config.repos.iter_mut().find(|p| repo.1.clone() == p.name) {
+            match target_repo.themes.iter_mut().find(|o| theme.name == o.name) {
                 Some(target_theme) => {
                     // If there is one, update values
                     target_theme.repository = theme.repository.clone();
