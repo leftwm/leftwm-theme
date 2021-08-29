@@ -48,7 +48,7 @@ impl New {
                         &Theme::new(&self.name, None, Some(dir.clone())),
                         (&String::from("localhost"), &String::from("LOCAL")),
                     );
-                    Config::save(&config)?;
+                    Config::save(config)?;
                     println!(
                         "{} {} {} {}",
                         "Theme".green().bold(),

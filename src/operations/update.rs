@@ -33,7 +33,7 @@ impl Update {
                 repo.compare(toml::from_str(&resp)?)?;
             }
         }
-        Config::save(&config)?;
+        Config::save(config)?;
 
         // Exit early if --no-list was passed
         if self.no_list {

@@ -90,7 +90,7 @@ impl Apply {
                     error!("Theme does not have a source");
                 }
 
-                Config::save(&config)?;
+                Config::save(config)?;
                 if !self.no_reset {
                     println!("{}", "Reloading LeftWM.".bright_blue().bold());
                     Command::new("pkill").arg("leftwm-worker").output()?;

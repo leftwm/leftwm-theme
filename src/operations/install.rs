@@ -56,7 +56,7 @@ impl Install {
         let mut dir = utils::dir::theme()?;
         dir.push(&theme.name);
         //clone the repo
-        Repository::clone(&repo, dir.clone()).map_err(|err| {
+        Repository::clone(repo, dir.clone()).map_err(|err| {
             let msg = format!(
                 "\n{} could not be installed because {:?} \n\n Theme not installed",
                 &theme.name,
@@ -81,7 +81,7 @@ impl Install {
         let target_theme =
             Theme::find_mut(&mut config, &self.name, source).ok_or_else(not_in_db)?;
         target_theme.directory = Some(dir);
-        Config::save(&config)?;
+        Config::save(config)?;
 
         print_theme_install_info(theme);
 
@@ -111,7 +111,7 @@ fn choose_one(themes: &mut [Theme]) -> Result<&mut Theme> {
     } else if themes.is_empty() {
         Err(friendly_message("No themes with that name were found"))
     } else {
-        let idx = ask(&themes)?;
+        let idx = ask(themes)?;
         Ok(&mut themes[idx])
     }
 }
