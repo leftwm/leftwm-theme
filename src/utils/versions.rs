@@ -8,6 +8,6 @@ use crate::models::LeftWm;
 pub fn check(vstring: &str) -> Result<bool, errors::LeftError> {
     use semver::{Version, VersionReq};
     let lwmv = LeftWm::get()?;
-    let requirements = VersionReq::parse(&vstring)?;
+    let requirements = VersionReq::parse(vstring)?;
     Ok(requirements.matches(&Version::parse(&lwmv.version)?))
 }

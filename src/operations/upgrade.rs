@@ -47,7 +47,7 @@ impl Upgrade {
                 //compare to old themes
                 repo.compare(toml::from_str(&resp)?)?;
             }
-            Config::save(&config)?;
+            Config::save(config)?;
         }
         // Update themes
         println!("{}", "\nUpdating themes:".bright_blue().bold());

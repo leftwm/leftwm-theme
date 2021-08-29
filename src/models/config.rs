@@ -51,7 +51,7 @@ impl Config {
         let config_filename = path.place_config_file("themes.toml")?;
         let toml = toml::to_string(&config)?;
         let mut file = File::create(&config_filename)?;
-        file.write_all(&toml.as_bytes())?;
+        file.write_all(toml.as_bytes())?;
         Ok(config)
     }
 
@@ -60,12 +60,12 @@ impl Config {
         if let Some(target_repo) = config
             .repos
             .iter_mut()
-            .find(|ref p| repo.1.clone() == p.name)
+            .find(|p| repo.1.clone() == p.name)
         {
             match target_repo
                 .themes
                 .iter_mut()
-                .find(|ref o| theme.name == o.name)
+                .find(|o| theme.name == o.name)
             {
                 Some(target_theme) => {
                     // If there is one, update values
@@ -129,7 +129,7 @@ impl Config {
             let config = Config::default();
             let toml = toml::to_string(&config)?;
             let mut file = File::create(&config_filename)?;
-            file.write_all(&toml.as_bytes())?;
+            file.write_all(toml.as_bytes())?;
             Ok(config)
         }
     }
@@ -155,7 +155,7 @@ impl Repo {
         match repo
             .themes
             .iter_mut()
-            .find(|ref p| theme.name.clone() == p.name.clone())
+            .find(|p| theme.name.clone() == p.name.clone())
         {
             Some(target_theme) => {
                 // If there is one, update values

@@ -40,7 +40,7 @@ impl Uninstall {
                     },
                     None => return Err(LeftError::from("No source found")),
                 }
-                Config::save(&config)?;
+                Config::save(config)?;
             } else {
                 println!("{}", "No actions to take. Exiting . . . ".yellow().bold());
             }

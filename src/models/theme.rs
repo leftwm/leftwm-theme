@@ -96,8 +96,8 @@ impl Theme {
         name: &str,
         repo_name: &str,
     ) -> Option<&'a mut Theme> {
-        match config.repos.iter_mut().find(|ref p| repo_name == p.name) {
-            Some(reposit) => reposit.themes.iter_mut().find(|ref o| name == o.name),
+        match config.repos.iter_mut().find(|p| repo_name == p.name) {
+            Some(reposit) => reposit.themes.iter_mut().find(|o| name == o.name),
             None => None,
         }
     }
