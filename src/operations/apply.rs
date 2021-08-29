@@ -98,7 +98,7 @@ impl Apply {
                 Ok(())
             } else {
                 error!(
-                    "\nTheme not installed. Try installing it with `leftwm-theme add {}`.",
+                    "\nTheme not installed. Try installing it with `leftwm-theme install {}`.",
                     &self.name
                 );
                 Err(errors::LeftError::from("Theme not installed"))
