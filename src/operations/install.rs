@@ -34,7 +34,7 @@ impl Install {
         trace!("{:?}", &mut config);
 
         let mut found = Theme::find_all(&mut config, &self.name)
-            .ok_or_else(|| friendly_message("Could not found find theme"))?;
+            .ok_or_else(|| friendly_message("Could not find theme"))?;
 
         //ask the user to pick a matching theme
         let mut selected = choose_one(&mut found)?;
