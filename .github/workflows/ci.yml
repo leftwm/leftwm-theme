@@ -8,8 +8,13 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  RUSTFLAGS: -Dwarnings
+  RUSTFLAGS: "-D warnings -W unreachable-pub -W rust-2021-compatibility"
   RUSTDOCFLAGS: -Dwarnings
+  RUSTUP_MAX_RETRIES: 10
+  RUST_BACKTRACE: full
+  CI: 1
+  CARGO_NET_RETRY: 10
+  CARGO_INCREMENTAL: 0
 
 jobs:
   build:
@@ -26,8 +31,10 @@ jobs:
         profile: minimal
         toolchain: stable
         override: true
+    - name: Cache Dependencies
+      uses: Swatinem/rust-cache@ce325b60658c1b38465c06cc965b79baf32c1e72
     - name: Build
-      run: cargo build --all-targets --all-features
+      run: cargo test --no-run --all-targets --all-features --locked
     - name: Run tests
       run: cargo test --all-targets --all-features
 
