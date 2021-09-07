@@ -9,6 +9,7 @@ use std::path::Path;
 use xdg::BaseDirectories;
 
 const THEMES_DIR: &str = "themes";
+const CURRENT_DIR: &str = "current";
 
 /// Contains a vector of all global repositories.
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -140,7 +141,8 @@ impl Repo {
         // Get a list of existing themes.
         let path = BaseDirectories::with_prefix("leftwm")?;
         let base_config_path = String::from(path.get_config_home().to_str().unwrap());
-        let existing_themes = Repo::installed_themes(base_config_path).unwrap();
+        let existing_themes = Repo::installed_themes(base_config_path.clone()).unwrap();
+        let current_theme = Repo::current_theme(base_config_path).unwrap();
         let themes_dir = path.get_config_home().join(THEMES_DIR);
 
         // Iterate over all the themes, and update/add if needed.
@@ -150,6 +152,12 @@ impl Repo {
             if existing_themes.contains(&tema.name.clone()) {
                 tema.directory = Some(themes_dir.join(tema.name.clone()));
             }
+
+            // Check if this is the current theme.
+            if current_theme.eq(&tema.name.clone()) {
+                tema.current = Some(true);
+            }
+
             Repo::update_or_append(self, &tema);
         }
         Ok(self)
@@ -180,6 +188,50 @@ impl Repo {
         }
     }
 
+    // Looks for the current theme in the themes directory and returns the name
+    // of the current theme.
+    fn current_theme(config_path: String) -> Option<String> {
+        let theme_path = Path::new(&config_path).join(THEMES_DIR);
+
+        // Return None if themes directory doesn't exist.
+        if !theme_path.exists() {
+            return None;
+        }
+
+        // Read the themes directory, find the "current" theme and get the
+        // current theme name.
+        let mut result = String::new();
+        let current_dir = String::from(CURRENT_DIR);
+        let paths = fs::read_dir(theme_path).unwrap();
+        for path in paths {
+            let p = &path.unwrap().path();
+            // Get the file with name "current" and check if it's a symlink.
+            // Follow the symlink to find the target theme.
+            let target_file_name = p.file_name().unwrap().to_str().unwrap();
+            if target_file_name.eq(&current_dir) {
+                let metadata = fs::symlink_metadata(p).unwrap();
+                let file_type = metadata.file_type();
+                if file_type.is_symlink() {
+                    result = String::from(
+                        fs::read_link(p)
+                            .unwrap()
+                            .file_name()
+                            .unwrap()
+                            .to_str()
+                            .unwrap(),
+                    );
+                }
+                break;
+            }
+        }
+
+        if result.is_empty() {
+            return None;
+        }
+
+        Some(result)
+    }
+
     // Returns a list of all the installed theme names under a given config
     // path.
     fn installed_themes(config_path: String) -> Result<Vec<String>> {
@@ -208,7 +260,7 @@ impl Repo {
             }
 
             // Ignore the "current" directory for installed theme list.
-            let current_dir = String::from("current");
+            let current_dir = String::from(CURRENT_DIR);
             let target_path = p.path();
             if target_path
                 .file_name()
@@ -248,7 +300,7 @@ mod test {
         assert!(File::create(unrelated_file).is_ok());
 
         // Create current theme as a symlink to an existing theme.
-        let current = themes_dir.join("current");
+        let current = themes_dir.join(CURRENT_DIR);
         let src = theme2.to_str().unwrap();
         let dst = current.to_str().unwrap();
         assert!(unix_fs::symlink(src, dst).is_ok());
@@ -267,5 +319,75 @@ mod test {
         let tmpdir = tempfile::tempdir().unwrap();
         let config_dir = tmpdir.path().to_str().unwrap();
         assert!(Repo::installed_themes(String::from(config_dir)).is_ok());
+    }
+
+    #[test]
+    fn test_current_theme() {
+        // Create a temporary directory as the config path and create the
+        // directory layout within it for themes.
+        let tmpdir = tempfile::tempdir().unwrap();
+        let themes_dir = tmpdir.path().join(THEMES_DIR);
+        let theme1 = themes_dir.join("test-theme1");
+        let theme2 = themes_dir.join("test-theme2");
+        assert!(fs::create_dir_all(&theme1).is_ok());
+        assert!(fs::create_dir_all(&theme2).is_ok());
+
+        // Create current theme as a symlink to an existing theme.
+        let current = themes_dir.join(CURRENT_DIR);
+        let src = theme2.to_str().unwrap();
+        let dst = current.to_str().unwrap();
+        assert!(unix_fs::symlink(src, dst).is_ok());
+
+        let config_dir = tmpdir.path().to_str().unwrap();
+        let result = Repo::current_theme(String::from(config_dir));
+        assert_eq!(result.unwrap(), "test-theme2");
+    }
+
+    #[test]
+    fn test_current_theme_unmanaged() {
+        let tmpdir = tempfile::tempdir().unwrap();
+        let themes_dir = tmpdir.path().join(THEMES_DIR);
+
+        // Custom theme, not a symlink, not managed by leftwm-theme.
+        let current = themes_dir.join(CURRENT_DIR);
+        assert!(fs::create_dir_all(&current).is_ok());
+
+        let config_dir = tmpdir.path().to_str().unwrap();
+        let result = Repo::current_theme(String::from(config_dir));
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_current_theme_no_themes_dir() {
+        let tmpdir = tempfile::tempdir().unwrap();
+        let config_dir = tmpdir.path().to_str().unwrap();
+        assert!(Repo::current_theme(String::from(config_dir)).is_none());
+    }
+
+    #[test]
+    fn test_current_theme_no_current() {
+        let tmpdir = tempfile::tempdir().unwrap();
+        let themes_dir = tmpdir.path().join(THEMES_DIR);
+        let theme1 = themes_dir.join("test-theme1");
+        let theme2 = themes_dir.join("test-theme2");
+        assert!(fs::create_dir_all(&theme1).is_ok());
+        assert!(fs::create_dir_all(&theme2).is_ok());
+
+        let config_dir = tmpdir.path().to_str().unwrap();
+        assert!(Repo::current_theme(String::from(config_dir)).is_none());
+    }
+
+    #[test]
+    fn test_current_theme_current_file() {
+        let tmpdir = tempfile::tempdir().unwrap();
+        let themes_dir = tmpdir.path().join(THEMES_DIR);
+        assert!(fs::create_dir_all(&themes_dir).is_ok());
+
+        // Create a file "current", instead of a directory.
+        let current_file = themes_dir.join(CURRENT_DIR);
+        assert!(File::create(current_file).is_ok());
+
+        let config_dir = tmpdir.path().to_str().unwrap();
+        assert!(Repo::current_theme(String::from(config_dir)).is_none());
     }
 }
