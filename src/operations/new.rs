@@ -5,6 +5,7 @@ use clap::Clap;
 use colored::Colorize;
 use git2::Repository;
 use log::{error, trace};
+use regex::Regex;
 use std::io;
 use std::io::Write;
 use std::path::Path;
@@ -23,13 +24,8 @@ impl New {
     /// Will error if a theme with same name already exists.
     /// Will error if config cannot be loaded or saved properly.
     pub fn exec(&self, mut config: &mut Config) -> Result<(), errors::LeftError> {
-        if self.name.contains('/') {
-            error!(
-                "\n{} could not be created because a theme name should not contain '/'",
-                &self.name,
-            );
-            return Err(errors::LeftError::from("Theme name not valid."));
-        }
+        New::validate_name(&self.name)?;
+
         if let Some(_theme) = Theme::find(&mut config, &self.name) {
             error!(
                 "\n{} could not be created because a theme with that name already exists",
@@ -93,6 +89,46 @@ impl New {
             }
         }
     }
+
+    // Validates a given name for the theme name.
+    fn validate_name(name: &str) -> Result<bool, errors::LeftError> {
+        let mut valid: bool = true;
+
+        // Should not contain '/'.
+        if name.contains('/') {
+            error!(
+                "\n{} could not be created because a theme name should not contain '/'",
+                &name,
+            );
+            valid = false;
+        }
+
+        // Check for allowed characters.
+        let re = Regex::new(r"^[a-z0-9_+-@.]*$").unwrap();
+        if valid && !re.is_match(name) {
+            error!(
+                "\n{} could not be created because a theme name can only contain lowercase alphanumeric characters and any of '@', '.', '_', '+', '-'",
+                &name,
+            );
+            valid = false;
+        }
+
+        // Should not have hyphens or dots at the beginning.
+        let starts_with_re = Regex::new(r"^[-.]").unwrap();
+        if valid && starts_with_re.is_match(name) {
+            error!(
+                "\n{} could not be created because a theme name should not start with hyphens or dots",
+                &name,
+            );
+            valid = false;
+        }
+
+        if !valid {
+            return Err(errors::LeftError::from("Theme name not valid."));
+        }
+
+        Ok(true)
+    }
 }
 
 fn copy_files(dir: &str, left_path: &Path) -> Result<(), errors::LeftError> {
@@ -115,4 +151,27 @@ fn copy_files(dir: &str, left_path: &Path) -> Result<(), errors::LeftError> {
         return Err(errors::LeftError::from("Theme not prefilled"));
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_name_validation() {
+        assert!(New::validate_name("test/theme").is_err());
+        assert!(New::validate_name("test theme").is_err());
+        assert!(New::validate_name("-testtheme").is_err());
+        assert!(New::validate_name(".testtheme").is_err());
+        assert!(New::validate_name("Testtheme").is_err());
+
+        assert!(New::validate_name("testtheme").is_ok());
+        assert!(New::validate_name("_testtheme").is_ok());
+        assert!(New::validate_name("1testtheme").is_ok());
+        assert!(New::validate_name("test1theme@").is_ok());
+        assert!(New::validate_name("test_theme").is_ok());
+        assert!(New::validate_name("test-theme").is_ok());
+        assert!(New::validate_name("test.theme").is_ok());
+        assert!(New::validate_name("test+theme").is_ok());
+    }
 }

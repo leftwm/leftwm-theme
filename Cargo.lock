@@ -479,6 +479,7 @@ dependencies = [
  "git2",
  "log",
  "pretty_env_logger",
+ "regex",
  "reqwest",
  "semver",
  "serde",
