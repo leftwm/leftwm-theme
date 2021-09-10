@@ -5,16 +5,21 @@ use log::{error, trace};
 use std::fs;
 use std::fs::File;
 use std::io::Write;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use xdg::BaseDirectories;
 
+const BASE_DIR_PREFIX: &str = "leftwm";
 const THEMES_DIR: &str = "themes";
 const CURRENT_DIR: &str = "current";
+const LOCAL_REPO_NAME: &str = "LOCAL";
+const COMMUNITY_REPO_NAME: &str = "community";
+const THEMES_CONFIG_FILENAME: &str = "themes.toml";
 
 /// Contains a vector of all global repositories.
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Config {
     pub repos: Vec<Repo>,
+    pub config_dir: Option<PathBuf>,
 }
 
 /// Contains global repository information. Akin to known.toml or themes.toml
@@ -27,20 +32,40 @@ pub struct Repo {
 
 impl Config {
     #[must_use]
-    pub fn default() -> Self {
+    // Create a new Config at the given path.
+    pub fn new(config_path: Option<PathBuf>) -> Self {
         Config {
-            repos: vec![
-                Repo {
+            repos: vec![],
+            config_dir: config_path,
+        }
+    }
+
+    // Populates the Config with defaults and returns it.
+    pub fn default(&mut self) -> Self {
+        let community_repo = Repo {
                     url: String::from("https://raw.githubusercontent.com/leftwm/leftwm-community-themes/master/known.toml"),
-                    name: String::from("community"),
+                    name: String::from(COMMUNITY_REPO_NAME),
                     themes: Vec::new()
-                },
-                Repo {
-                    url: String::from("localhost"),
-                    name: String::from("LOCAL"),
-                    themes: Vec::new(),
-                },
-            ],
+                };
+        let local_repo = Repo {
+            url: String::from("localhost"),
+            name: String::from(LOCAL_REPO_NAME),
+            themes: Vec::new(),
+        };
+        self.repos.push(community_repo);
+        self.repos.push(local_repo);
+        self.clone()
+    }
+
+    // Returns the config dir path. If config path is None, it constructs and
+    // returns a default config path (~/.config/leftwm).
+    pub fn get_config_dir(&self) -> Result<PathBuf> {
+        match &self.config_dir {
+            Some(path) => Ok(path.clone()),
+            None => {
+                let path = BaseDirectories::with_prefix(BASE_DIR_PREFIX)?;
+                Ok(path.get_config_home())
+            }
         }
     }
 
@@ -50,8 +75,7 @@ impl Config {
     /// Errors if the `BaseDirectory` is not set (no systemd)
     /// Errors if no file can be saved
     pub fn save(config: &Self) -> Result<&Config> {
-        let path = BaseDirectories::with_prefix("leftwm")?;
-        let config_filename = path.place_config_file("themes.toml")?;
+        let config_filename = config.get_config_dir()?.join(THEMES_CONFIG_FILENAME);
         let toml = toml::to_string(&config)?;
         let mut file = File::create(&config_filename)?;
         file.write_all(toml.as_bytes())?;
@@ -91,7 +115,7 @@ impl Config {
     pub fn themes(&mut self, local: bool) -> Vec<Theme> {
         let mut themes: Vec<Theme> = Vec::new();
         for repo in &self.repos {
-            if local && repo.name == *"LOCAL" {
+            if local && repo.name == *LOCAL_REPO_NAME {
                 continue;
             }
             for theme in &repo.themes {
@@ -107,9 +131,8 @@ impl Config {
     /// Will error if themes.toml doesn't exist
     /// Will error if themes.toml has invalid content.
     /// Will error if themes.toml cannot be written to.
-    pub fn load() -> Result<Config> {
-        let path = BaseDirectories::with_prefix("leftwm")?;
-        let config_filename = path.place_config_file("themes.toml")?;
+    pub fn load(&self) -> Result<Config> {
+        let config_filename = self.get_config_dir()?.join(THEMES_CONFIG_FILENAME);
         if Path::new(&config_filename).exists() {
             let contents = fs::read_to_string(config_filename)?;
             trace!("{:?}", &contents);
@@ -121,12 +144,65 @@ impl Config {
                 }
             }
         } else {
-            let config = Config::default();
+            let config = Config::new(None).default();
             let toml = toml::to_string(&config)?;
             let mut file = File::create(&config_filename)?;
             file.write_all(toml.as_bytes())?;
             Ok(config)
         }
+    }
+
+    // Updates the Config with local themes. This depends on the config to
+    // already have remote theme repos populated. It assumes that the themes
+    // that aren't in any of the remote repos are local themes.
+    pub fn update_local_repo(&mut self) -> Result<()> {
+        // Get a list of all the themes in the themes directory.
+        let existing_themes = Repo::installed_themes(self.get_config_dir()?).unwrap();
+
+        let mut local_themes: Vec<String> = Vec::new();
+
+        // Iterate through the existing themes and check if they are from the
+        // remote repos. If not, consider the theme to be a local theme.
+        for tt in existing_themes {
+            let mut found: bool = false;
+            for repo in &self.repos {
+                if repo.name != LOCAL_REPO_NAME {
+                    for theme in &repo.themes {
+                        if tt.eq(&theme.name) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                // Break out of the loop, since we already found the theme,
+                // so as to process the next existing theme.
+                if found {
+                    break;
+                }
+            }
+            if !found {
+                local_themes.push(tt);
+            }
+        }
+
+        // Create TempThemes from the local themes.
+        let mut local_temp_themes = TempThemes { theme: vec![] };
+        let config_dir = self.get_config_dir()?;
+        for lt in local_themes {
+            let path = config_dir.clone().join(THEMES_DIR).join(&lt);
+            let t = Theme::new(&lt, None, Some(path));
+            local_temp_themes.theme.push(t);
+        }
+
+        // Update the local themes in the Config.
+        for repo in &mut self.repos {
+            if repo.name == LOCAL_REPO_NAME {
+                repo.compare(local_temp_themes, config_dir)?;
+                break;
+            }
+        }
+
+        Ok(())
     }
 }
 
@@ -134,16 +210,14 @@ impl Repo {
     /// # Errors
     ///
     /// No errors should occur.
-    pub fn compare(&mut self, theme_wrap: TempThemes) -> Result<&Repo> {
+    pub fn compare(&mut self, theme_wrap: TempThemes, config_dir: PathBuf) -> Result<&Repo> {
         let themes = theme_wrap.theme;
         trace!("Comparing themes");
 
         // Get a list of existing themes.
-        let path = BaseDirectories::with_prefix("leftwm")?;
-        let base_config_path = String::from(path.get_config_home().to_str().unwrap());
-        let existing_themes = Repo::installed_themes(base_config_path.clone()).unwrap();
-        let current_theme = Repo::current_theme(base_config_path).unwrap();
-        let themes_dir = path.get_config_home().join(THEMES_DIR);
+        let existing_themes = Repo::installed_themes(config_dir.clone()).unwrap();
+        let current_theme = Repo::current_theme(config_dir.clone()).unwrap();
+        let themes_dir = config_dir.join(THEMES_DIR);
 
         // Iterate over all the themes, and update/add if needed.
         for mut tema in themes {
@@ -190,8 +264,8 @@ impl Repo {
 
     // Looks for the current theme in the themes directory and returns the name
     // of the current theme.
-    fn current_theme(config_path: String) -> Option<String> {
-        let theme_path = Path::new(&config_path).join(THEMES_DIR);
+    fn current_theme(config_path: PathBuf) -> Option<String> {
+        let theme_path = config_path.join(THEMES_DIR);
 
         // Return None if themes directory doesn't exist.
         if !theme_path.exists() {
@@ -234,10 +308,10 @@ impl Repo {
 
     // Returns a list of all the installed theme names under a given config
     // path.
-    fn installed_themes(config_path: String) -> Result<Vec<String>> {
+    fn installed_themes(config_path: PathBuf) -> Result<Vec<String>> {
         let mut result: Vec<String> = Vec::new();
 
-        let theme_path = Path::new(&config_path).join(THEMES_DIR);
+        let theme_path = config_path.join(THEMES_DIR);
 
         // Return empty result if the themes directory is not present.
         if !theme_path.exists() {
@@ -305,8 +379,8 @@ mod test {
         let dst = current.to_str().unwrap();
         assert!(unix_fs::symlink(src, dst).is_ok());
 
-        let config_dir = tmpdir.path().to_str().unwrap();
-        let result = Repo::installed_themes(String::from(config_dir));
+        let config_dir = tmpdir.path().to_path_buf();
+        let result = Repo::installed_themes(config_dir);
         assert!(result.is_ok());
         assert_eq!(
             result.unwrap(),
@@ -317,8 +391,8 @@ mod test {
     #[test]
     fn test_installed_themes_no_themes_dir() {
         let tmpdir = tempfile::tempdir().unwrap();
-        let config_dir = tmpdir.path().to_str().unwrap();
-        assert!(Repo::installed_themes(String::from(config_dir)).is_ok());
+        let config_dir = tmpdir.path().to_path_buf();
+        assert!(Repo::installed_themes(config_dir).is_ok());
     }
 
     #[test]
@@ -338,8 +412,7 @@ mod test {
         let dst = current.to_str().unwrap();
         assert!(unix_fs::symlink(src, dst).is_ok());
 
-        let config_dir = tmpdir.path().to_str().unwrap();
-        let result = Repo::current_theme(String::from(config_dir));
+        let result = Repo::current_theme(tmpdir.path().to_path_buf());
         assert_eq!(result.unwrap(), "test-theme2");
     }
 
@@ -352,16 +425,14 @@ mod test {
         let current = themes_dir.join(CURRENT_DIR);
         assert!(fs::create_dir_all(&current).is_ok());
 
-        let config_dir = tmpdir.path().to_str().unwrap();
-        let result = Repo::current_theme(String::from(config_dir));
+        let result = Repo::current_theme(tmpdir.path().to_path_buf());
         assert!(result.is_none());
     }
 
     #[test]
     fn test_current_theme_no_themes_dir() {
         let tmpdir = tempfile::tempdir().unwrap();
-        let config_dir = tmpdir.path().to_str().unwrap();
-        assert!(Repo::current_theme(String::from(config_dir)).is_none());
+        assert!(Repo::current_theme(tmpdir.path().to_path_buf()).is_none());
     }
 
     #[test]
@@ -372,9 +443,7 @@ mod test {
         let theme2 = themes_dir.join("test-theme2");
         assert!(fs::create_dir_all(&theme1).is_ok());
         assert!(fs::create_dir_all(&theme2).is_ok());
-
-        let config_dir = tmpdir.path().to_str().unwrap();
-        assert!(Repo::current_theme(String::from(config_dir)).is_none());
+        assert!(Repo::current_theme(tmpdir.path().to_path_buf()).is_none());
     }
 
     #[test]
@@ -387,7 +456,100 @@ mod test {
         let current_file = themes_dir.join(CURRENT_DIR);
         assert!(File::create(current_file).is_ok());
 
-        let config_dir = tmpdir.path().to_str().unwrap();
-        assert!(Repo::current_theme(String::from(config_dir)).is_none());
+        assert!(Repo::current_theme(tmpdir.path().to_path_buf()).is_none());
+    }
+
+    #[test]
+    fn test_config_new() {
+        let config1 = Config::new(None);
+        assert!(config1.config_dir.is_none());
+        assert!(config1
+            .get_config_dir()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .ends_with("/.config/leftwm/"));
+
+        let config2 = Config::new(Some(PathBuf::from("/tmp/foo")));
+        assert!(config2.config_dir.is_some());
+        assert!(config2
+            .get_config_dir()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .eq("/tmp/foo"));
+    }
+
+    #[test]
+    fn test_config_default() {
+        let config = Config::new(None).default();
+        assert_eq!(config.repos.len(), 2);
+        assert!(config.repos.iter().any(|x| x.name == COMMUNITY_REPO_NAME));
+        assert!(config.repos.iter().any(|x| x.name == LOCAL_REPO_NAME));
+    }
+
+    #[test]
+    fn test_config_update_local_repo() {
+        // Create test config directory layout with community and local themes.
+        let tmpdir = tempfile::tempdir().unwrap();
+        let themes_dir = tmpdir.path().join(THEMES_DIR);
+        let ctheme1 = themes_dir.join("community-theme1");
+        let ctheme2 = themes_dir.join("community-theme2");
+        let ltheme1 = themes_dir.join("local-theme1");
+        let ltheme2 = themes_dir.join("local-theme2");
+
+        assert!(fs::create_dir_all(&ctheme1).is_ok());
+        assert!(fs::create_dir_all(&ctheme2).is_ok());
+        assert!(fs::create_dir_all(&ltheme1).is_ok());
+        assert!(fs::create_dir_all(&ltheme2).is_ok());
+
+        // Set current theme symlink to a local theme.
+        let current = themes_dir.join(CURRENT_DIR);
+        let src = ltheme1.to_str().unwrap();
+        let dst = current.to_str().unwrap();
+        assert!(unix_fs::symlink(src, dst).is_ok());
+
+        // Construct themes to be added to the community repo.
+        let t1 = Theme::new("community-theme1", None, Some(ctheme1));
+        let t2 = Theme::new("community-theme2", None, Some(ctheme2));
+        // Extra uninstalled theme.
+        let t3 = Theme::new("community-theme3", None, None);
+
+        let mut config = Config::new(Some(tmpdir.path().to_path_buf())).default();
+
+        // Append the themes created above to the community repo.
+        for repo in &mut config.repos {
+            if repo.name == COMMUNITY_REPO_NAME {
+                repo.themes.push(t1);
+                repo.themes.push(t2);
+                repo.themes.push(t3);
+                break;
+            }
+        }
+
+        assert!(config.update_local_repo().is_ok());
+
+        let comm_repo = config
+            .repos
+            .clone()
+            .into_iter()
+            .find(|x| x.name == COMMUNITY_REPO_NAME)
+            .unwrap();
+        assert_eq!(comm_repo.themes.len(), 3);
+
+        let local_repo = config
+            .repos
+            .into_iter()
+            .find(|x| x.name == LOCAL_REPO_NAME)
+            .unwrap();
+        assert_eq!(local_repo.themes.len(), 2);
+
+        // Check if local theme is the current theme.
+        let local_theme1 = local_repo
+            .themes
+            .into_iter()
+            .find(|x| x.name == "local-theme1")
+            .unwrap();
+        assert!(local_theme1.current.unwrap());
     }
 }
