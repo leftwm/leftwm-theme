@@ -1,4 +1,5 @@
 use std::fmt;
+use url::ParseError as urlParseError;
 pub type Result<T> = std::result::Result<T, LeftError>;
 
 #[derive(Debug)]
@@ -28,6 +29,7 @@ pub enum LeftErrorKind {
     Generic(String),
     ParseIntError(core::num::ParseIntError),
     SemVerError(semver::Error),
+    UrlParseError(url::ParseError),
 }
 
 impl fmt::Display for LeftError {
@@ -53,6 +55,7 @@ impl fmt::Display for LeftErrorKind {
             LeftErrorKind::GitError(ref err) => return write!(f, "{}", err),
             LeftErrorKind::ParseIntError(ref err) => return write!(f, "{}", err),
             LeftErrorKind::SemVerError(ref err) => return write!(f, "{}", err),
+            LeftErrorKind::UrlParseError(ref err) => return write!(f, "{}", err),
         }
     }
 }
@@ -120,5 +123,11 @@ impl From<core::num::ParseIntError> for LeftError {
 impl From<semver::Error> for LeftError {
     fn from(inner: semver::Error) -> LeftError {
         LeftErrorKind::SemVerError(inner).into()
+    }
+}
+
+impl From<urlParseError> for LeftError {
+    fn from(inner: urlParseError) -> LeftError {
+        LeftErrorKind::UrlParseError(inner).into()
     }
 }
