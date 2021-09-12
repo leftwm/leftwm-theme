@@ -79,15 +79,11 @@ impl Update {
             let content: String;
             // Check the url scheme to determine how to fetch the themes.
             let repo_url = Url::parse(repo.url.clone().as_str())?;
-            match repo_url.scheme() {
-                "file" => {
-                    content = fs::read_to_string(repo_url.path())?;
-                }
-                _ => {
-                    content =
-                        reqwest::blocking::get(repo_url.as_str())?.text_with_charset("utf-8")?;
-                    trace!("{:?}", &content);
-                }
+            if repo_url.scheme() == "file" {
+                content = fs::read_to_string(repo_url.path())?;
+            } else {
+                content = reqwest::blocking::get(repo_url.as_str())?.text_with_charset("utf-8")?;
+                trace!("{:?}", &content);
             }
             if !content.is_empty() {
                 repo.compare(toml::from_str(&content)?, &config_dir)?;
