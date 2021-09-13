@@ -155,7 +155,7 @@ fn ask(themes: &[Theme]) -> Result<usize> {
                 break;
             }
         }
-        println!("{}", "Error: Please select a number:".bright_red().bold())
+        println!("{}", "Error: Please select a number:".bright_red().bold());
     }
     return_index
 }

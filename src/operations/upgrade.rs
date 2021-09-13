@@ -46,7 +46,7 @@ impl Upgrade {
                 trace!("{:?}", &resp);
 
                 //compare to old themes
-                repo.compare(toml::from_str(&resp)?, config_dir.clone())?;
+                repo.compare(toml::from_str(&resp)?, &config_dir)?;
             }
             Config::save(config)?;
         }
@@ -105,5 +105,5 @@ impl Upgrade {
 }
 
 pub(crate) fn fetch_origin_main(repo: &git2::Repository) -> Result<(), git2::Error> {
-    repo.find_remote("origin")?.fetch(&["main"], None, None)
+    return repo.find_remote("origin")?.fetch(&["main"], None, None);
 }

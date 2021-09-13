@@ -32,27 +32,27 @@ pub enum LeftErrorKind {
 
 impl fmt::Display for LeftError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.inner)
+        return write!(f, "{}", self.inner);
     }
 }
 
 impl fmt::Display for LeftErrorKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            LeftErrorKind::SerdeParse(ref err) => write!(f, "{}", err),
+            LeftErrorKind::SerdeParse(ref err) => return write!(f, "{}", err),
             LeftErrorKind::UserFriendlyError(ref err) | LeftErrorKind::Generic(ref err) => {
-                write!(f, "{}", err)
+                return write!(f, "{}", err)
             }
-            LeftErrorKind::IoError(ref err) => write!(f, "{}", err),
-            LeftErrorKind::XdgBaseDirError(ref err) => write!(f, "{}", err),
-            LeftErrorKind::TomlParse(ref err) => write!(f, "{}", err),
-            LeftErrorKind::TomlSerialize(ref err) => write!(f, "{}", err),
-            LeftErrorKind::StreamError() => write!(f, "Stream Error"),
-            LeftErrorKind::NoneError() => write!(f, "None Error"),
-            LeftErrorKind::ReqwestError(ref err) => write!(f, "Request Error: {}", err),
-            LeftErrorKind::GitError(ref err) => write!(f, "{}", err),
-            LeftErrorKind::ParseIntError(ref err) => write!(f, "{}", err),
-            LeftErrorKind::SemVerError(ref err) => write!(f, "{}", err),
+            LeftErrorKind::IoError(ref err) => return write!(f, "{}", err),
+            LeftErrorKind::XdgBaseDirError(ref err) => return write!(f, "{}", err),
+            LeftErrorKind::TomlParse(ref err) => return write!(f, "{}", err),
+            LeftErrorKind::TomlSerialize(ref err) => return write!(f, "{}", err),
+            LeftErrorKind::StreamError() => return write!(f, "Stream Error"),
+            LeftErrorKind::NoneError() => return write!(f, "None Error"),
+            LeftErrorKind::ReqwestError(ref err) => return write!(f, "Request Error: {}", err),
+            LeftErrorKind::GitError(ref err) => return write!(f, "{}", err),
+            LeftErrorKind::ParseIntError(ref err) => return write!(f, "{}", err),
+            LeftErrorKind::SemVerError(ref err) => return write!(f, "{}", err),
         }
     }
 }
