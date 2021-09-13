@@ -105,5 +105,5 @@ impl Upgrade {
 }
 
 pub(crate) fn fetch_origin_main(repo: &git2::Repository) -> Result<(), git2::Error> {
-    return repo.find_remote("origin")?.fetch(&["main"], None, None)
+    return repo.find_remote("origin")?.fetch(&["main"], None, None);
 }
