@@ -32,6 +32,7 @@ impl Upgrade {
         //attempt to fetch new themes
         if !self.skipdbupdate {
             println!("{}", "Fetching known themes:".bright_blue().bold());
+            let config_dir = config.get_config_dir()?;
             for repo in &mut config.repos {
                 if repo.name == "LOCAL" {
                     continue;
@@ -45,7 +46,7 @@ impl Upgrade {
                 trace!("{:?}", &resp);
 
                 //compare to old themes
-                repo.compare(toml::from_str(&resp)?)?;
+                repo.compare(toml::from_str(&resp)?, config_dir.clone())?;
             }
             Config::save(config)?;
         }

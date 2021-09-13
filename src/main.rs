@@ -64,7 +64,7 @@ fn main() {
     pretty_env_logger::init();
 
     log::trace!("Loading configuration");
-    let mut config = Config::load().unwrap_or_default();
+    let mut config = Config::new(None).load().unwrap_or_default();
 
     let wrapper: Result<()> = match opt.operation {
         //Operation::AutoFind(args) => AutoFind::exec(&args),
