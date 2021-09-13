@@ -216,7 +216,7 @@ impl Repo {
 
         // Get a list of existing themes.
         let existing_themes = Repo::installed_themes(config_dir.clone()).unwrap();
-        let current_theme = Repo::current_theme(config_dir.clone()).unwrap();
+        let current_theme = Repo::current_theme(config_dir.clone());
         let themes_dir = config_dir.join(THEMES_DIR);
 
         // Iterate over all the themes, and update/add if needed.
@@ -228,7 +228,7 @@ impl Repo {
             }
 
             // Check if this is the current theme.
-            if current_theme.eq(&tema.name.clone()) {
+            if current_theme.eq(&Some(tema.name.clone())) {
                 tema.current = Some(true);
             }
 
