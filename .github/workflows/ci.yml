@@ -34,7 +34,7 @@ jobs:
     - name: Cache Dependencies
       uses: Swatinem/rust-cache@ce325b60658c1b38465c06cc965b79baf32c1e72
     - name: Build
-      run: cargo test --no-run --all-targets --all-features --locked
+      run: cargo test --no-run --all-targets --all-features
     - name: Run tests
       run: cargo test --all-targets --all-features
     - name: Install Clippy
