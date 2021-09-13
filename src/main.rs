@@ -81,9 +81,9 @@ fn main() {
 
     if let Err(e) = wrapper {
         if let LeftErrorKind::UserFriendlyError(msg) = e.inner {
-            println!("{}", &msg.bright_red())
+            println!("{}", &msg.bright_red());
         } else {
-            error!("Operation did not complete successfully")
+            error!("Operation did not complete successfully");
         }
     }
 }

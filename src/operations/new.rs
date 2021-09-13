@@ -66,7 +66,7 @@ impl New {
                             break state;
                         }
 
-                        println!("Please write a number 0-3.")
+                        println!("Please write a number 0-3.");
                     };
                     match state.as_str() {
                         "0" => copy_files("/usr/share/leftwm/themes/basic_lemonbar/", &dir),

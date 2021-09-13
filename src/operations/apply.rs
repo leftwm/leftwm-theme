@@ -81,7 +81,7 @@ impl Apply {
                 }
                 if let Some(source) = theme.source {
                     if let Some(target_theme) = Theme::find_mut(&mut config, &theme.name, &source) {
-                        target_theme.current(true)
+                        target_theme.current(true);
                     } else {
                         error!("Theme not found");
                         return Err(LeftError::from("Theme not found"));

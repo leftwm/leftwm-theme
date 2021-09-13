@@ -32,7 +32,7 @@ impl Update {
                 trace!("{:?}", &resp);
 
                 // Compare to old themes
-                repo.compare(toml::from_str(&resp)?, config_dir.clone())?;
+                repo.compare(toml::from_str(&resp)?, &config_dir)?;
             }
         }
 
