@@ -110,7 +110,7 @@ impl Apply {
     }
 }
 
-pub fn checks(theme: &Theme) -> bool {
+pub(crate) fn checks(theme: &Theme) -> bool {
     trace!("Checking dependencies.");
     match theme.dependencies.clone() {
         None => {
