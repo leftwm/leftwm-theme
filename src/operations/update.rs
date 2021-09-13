@@ -21,7 +21,9 @@ impl Update {
     /// Will error if TOML files themes.toml or known.toml cannot be parsed.
     pub fn exec(&self, config: &mut Config) -> Result<(), errors::LeftError> {
         println!("{}", "Fetching themes . . . ".bright_blue().bold());
-        // Attempt to fetch new themes
+        let config_dir = config.get_config_dir()?;
+        // Attempt to fetch new themes and populate the config with remote
+        // themes.
         trace!("{:?}", &config);
         for repo in &mut config.repos {
             if repo.name != "LOCAL" {
@@ -30,9 +32,13 @@ impl Update {
                 trace!("{:?}", &resp);
 
                 // Compare to old themes
-                repo.compare(toml::from_str(&resp)?)?;
+                repo.compare(toml::from_str(&resp)?, config_dir.clone())?;
             }
         }
+
+        // Populate config based on the local themes.
+        config.update_local_repo()?;
+
         Config::save(config)?;
 
         // Exit early if --no-list was passed
