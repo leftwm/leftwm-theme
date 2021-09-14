@@ -120,7 +120,7 @@ impl Theme {
     }
 
     /// Sets relative directory; abstracting because behavior might change
-    pub fn set_relative_directory(&mut self, rel_dir: Option<String>){
+    pub fn set_relative_directory(&mut self, rel_dir: Option<String>) {
         self.relative_directory = rel_dir;
     }
 
