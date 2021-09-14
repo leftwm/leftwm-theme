@@ -2,6 +2,7 @@ use crate::errors;
 use crate::errors::Result;
 use crate::models::theme::{TempThemes, Theme};
 use log::{error, trace};
+use std::ffi::OsStr;
 use std::fs;
 use std::fs::File;
 use std::io::Write;
@@ -223,7 +224,7 @@ impl Repo {
 
         // Get a list of existing themes.
         let existing_themes = Repo::installed_themes(&config_dir.to_path_buf())?;
-        let current_theme = Repo::current_theme(&config_dir.to_path_buf());
+        let current_theme = Repo::current_theme(&config_dir.to_path_buf())?.unwrap_or_default();
         let themes_dir = config_dir.join(THEMES_DIR);
 
         // Iterate over all the themes, and update/add if needed.
@@ -235,7 +236,7 @@ impl Repo {
             }
 
             // Check if this is the current theme.
-            if current_theme.eq(&Some(tema.name.clone())) {
+            if current_theme.eq(&tema.name.clone()) {
                 tema.current = Some(true);
             }
 
@@ -271,35 +272,38 @@ impl Repo {
 
     // Looks for the current theme in the themes directory and returns the name
     // of the current theme.
-    fn current_theme(config_path: &Path) -> Option<String> {
+    fn current_theme(config_path: &Path) -> Result<Option<String>> {
         let theme_path = config_path.join(THEMES_DIR);
 
         // Return None if themes directory doesn't exist.
         if !theme_path.exists() {
-            return None;
+            return Ok(None);
         }
 
         // Read the themes directory, find the "current" theme and get the
         // current theme name.
         let mut result = String::new();
-        let current_dir = String::from(CURRENT_DIR);
-        let paths = fs::read_dir(theme_path).unwrap();
+        let current_dir = OsStr::new(CURRENT_DIR);
+        let paths = fs::read_dir(theme_path)?;
         for path in paths {
-            let p = &path.unwrap().path();
+            let p = &path?.path();
             // Get the file with name "current" and check if it's a symlink.
             // Follow the symlink to find the target theme.
-            let target_file_name = p.file_name().unwrap().to_str().unwrap();
-            if target_file_name.eq(&current_dir) {
-                let metadata = fs::symlink_metadata(p).unwrap();
+            let target_file_name = p
+                .file_name()
+                .unwrap_or_default()
+                .to_str()
+                .unwrap_or_default();
+            if target_file_name.eq(current_dir) {
+                let metadata = fs::symlink_metadata(p)?;
                 let file_type = metadata.file_type();
                 if file_type.is_symlink() {
                     result = String::from(
-                        fs::read_link(p)
-                            .unwrap()
+                        fs::read_link(p)?
                             .file_name()
-                            .unwrap()
+                            .unwrap_or_default()
                             .to_str()
-                            .unwrap(),
+                            .unwrap_or_default(),
                     );
                 }
                 break;
@@ -307,10 +311,10 @@ impl Repo {
         }
 
         if result.is_empty() {
-            return None;
+            return Ok(None);
         }
 
-        Some(result)
+        Ok(Some(result))
     }
 
     // Returns a list of all the installed theme names under a given config
@@ -327,9 +331,9 @@ impl Repo {
 
         // Read the themes directory, iterate through the entries, determine
         // which of them are theme directories and add them into the result.
-        let paths = fs::read_dir(theme_path).unwrap();
+        let paths = fs::read_dir(theme_path)?;
         for path in paths {
-            let p = path.unwrap();
+            let p = path?;
             // NOTE: For symlinks, metadata() traverses any symlinks and queries
             // the metadata information from the destination.
             let metadata = fs::metadata(p.path())?;
@@ -345,17 +349,17 @@ impl Repo {
             let target_path = p.path();
             if target_path
                 .file_name()
-                .unwrap()
+                .unwrap_or_default()
                 .to_str()
-                .unwrap()
+                .unwrap_or_default()
                 .eq(&current_dir)
             {
                 continue;
             }
 
             // Extract only the theme name for the result.
-            let theme_name = target_path.file_name().unwrap();
-            result.push(String::from(theme_name.to_str().unwrap()));
+            let theme_name = target_path.file_name().unwrap_or_default();
+            result.push(String::from(theme_name.to_str().unwrap_or_default()));
         }
 
         Ok(result)
@@ -420,7 +424,7 @@ mod test {
         assert!(unix_fs::symlink(src, dst).is_ok());
 
         let result = Repo::current_theme(&tmpdir.path().to_path_buf());
-        assert_eq!(result, Some(String::from("test-theme2")));
+        assert_eq!(result.unwrap().unwrap(), "test-theme2");
     }
 
     #[test]
@@ -433,13 +437,15 @@ mod test {
         assert!(fs::create_dir_all(&current).is_ok());
 
         let result = Repo::current_theme(&tmpdir.path().to_path_buf());
-        assert!(result.is_none());
+        assert!(result.unwrap().is_none());
     }
 
     #[test]
     fn test_current_theme_no_themes_dir() {
         let tmpdir = tempfile::tempdir().unwrap();
-        assert!(Repo::current_theme(&tmpdir.path().to_path_buf()).is_none());
+        assert!(Repo::current_theme(&tmpdir.path().to_path_buf())
+            .unwrap()
+            .is_none());
     }
 
     #[test]
@@ -450,7 +456,9 @@ mod test {
         let theme2 = themes_dir.join("test-theme2");
         assert!(fs::create_dir_all(&theme1).is_ok());
         assert!(fs::create_dir_all(&theme2).is_ok());
-        assert!(Repo::current_theme(&tmpdir.path().to_path_buf()).is_none());
+        assert!(Repo::current_theme(&tmpdir.path().to_path_buf())
+            .unwrap()
+            .is_none());
     }
 
     #[test]
@@ -463,7 +471,9 @@ mod test {
         let current_file = themes_dir.join(CURRENT_DIR);
         assert!(File::create(current_file).is_ok());
 
-        assert!(Repo::current_theme(&tmpdir.path().to_path_buf()).is_none());
+        assert!(Repo::current_theme(&tmpdir.path().to_path_buf())
+            .unwrap()
+            .is_none());
     }
 
     #[test]

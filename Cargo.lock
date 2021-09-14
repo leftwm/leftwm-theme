@@ -489,6 +489,7 @@ dependencies = [
  "serde_json",
  "tempfile",
  "toml",
+ "url",
  "xdg",
 ]
 
