@@ -4,15 +4,26 @@ use std::path::PathBuf;
 /// Contains information about a theme contained within themes.toml (or known.toml upstream).
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Theme {
+    /// Name of the theme, must follow arch convention [az-_]
     pub name: String,
+    /// A helpful description of the theme
     pub description: Option<String>,
+    /// (Local) (Managed by leftwm-theme), the local directory where the theme is stored
     pub directory: Option<PathBuf>,
+    /// The git repository where the theme may be downloaded from
     pub repository: Option<String>,
+    /// The commit to use for the theme; can use * for HEAD
     pub commit: Option<String>,
+    /// The version for the theme, incrementing will force updates
     pub version: Option<String>,
+    /// Compatible leftwm versions
     pub leftwm_versions: Option<String>,
+    /// (Local) Whether the theme is the current theme
     pub current: Option<bool>,
+    /// A list of dependencies
     pub dependencies: Option<Vec<DependencyL>>,
+    /// Path to the directory containing up, down, and theme.toml w.r.t. root
+    pub relative_directory: Option<String>,
     #[serde(skip)]
     pub source: Option<String>,
 }
@@ -54,6 +65,7 @@ impl Theme {
             leftwm_versions: Some("*".to_string()),
             dependencies: None,
             current: Some(false),
+            relative_directory: None,
             source: None,
         }
     }
@@ -105,6 +117,16 @@ impl Theme {
     pub fn source(&mut self, name: String) -> &mut Theme {
         self.source = Some(name);
         self
+    }
+
+    /// Sets relative directory; abstracting because behavior might change
+    pub fn set_relative_directory(&mut self, rel_dir: Option<String>) {
+        self.relative_directory = rel_dir;
+    }
+
+    /// Gets relative directory; abstracting because behavior might change; <3 JKN MGK
+    pub fn relative_directory(&self) -> Option<String> {
+        self.relative_directory.clone()
     }
 
     pub fn current(&mut self, currency: bool) {
