@@ -56,7 +56,10 @@ impl Apply {
                     error!("Not all prerequirements passed");
                     return Err(errors::LeftError::from("PreReqs"));
                 }
-                let path = Path::new(theme_dir);
+                let mut path = Path::new(theme_dir).to_path_buf();
+                if let Some(rel_dir) = theme.relative_directory() {
+                    path.push(rel_dir);
+                }
                 trace!("{:?}", &path);
                 match fs::remove_dir_all(&dir) {
                     Ok(_) => {
