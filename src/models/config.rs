@@ -398,9 +398,11 @@ mod test {
         let config_dir = tmpdir.path().to_path_buf();
         let result = Repo::installed_themes(&config_dir);
         assert!(result.is_ok());
+        let mut result_vec = result.unwrap();
+        result_vec.sort();
         assert_eq!(
-            result.unwrap(),
-            vec!["test-theme2".to_string(), "test-theme1".to_string(),],
+            result_vec,
+            vec!["test-theme1".to_string(), "test-theme2".to_string(),],
         );
     }
 
