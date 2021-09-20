@@ -9,8 +9,9 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use xdg::BaseDirectories;
 
+pub const THEMES_DIR: &str = "themes";
+
 const BASE_DIR_PREFIX: &str = "leftwm";
-const THEMES_DIR: &str = "themes";
 const CURRENT_DIR: &str = "current";
 const LOCAL_REPO_NAME: &str = "LOCAL";
 const COMMUNITY_REPO_NAME: &str = "community";
@@ -229,6 +230,9 @@ impl Repo {
 
         // Iterate over all the themes, and update/add if needed.
         for mut tema in themes {
+            // Apply any theme changes before updating or adding it.
+            tema.apply_changes(config_dir)?;
+
             // Check if the theme is already installed and update the theme
             // directory attribute.
             if existing_themes.contains(&tema.name.clone()) {
@@ -394,9 +398,11 @@ mod test {
         let config_dir = tmpdir.path().to_path_buf();
         let result = Repo::installed_themes(&config_dir);
         assert!(result.is_ok());
+        let mut result_vec = result.unwrap();
+        result_vec.sort();
         assert_eq!(
-            result.unwrap(),
-            vec!["test-theme2".to_string(), "test-theme1".to_string(),],
+            result_vec,
+            vec!["test-theme1".to_string(), "test-theme2".to_string(),],
         );
     }
 
