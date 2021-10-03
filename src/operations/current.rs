@@ -1,3 +1,4 @@
+use crate::errors::friendly_message;
 use std::path::PathBuf;
 use crate::models::Config;
 use crate::errors;
@@ -36,8 +37,13 @@ impl Current {
         let cfg_data: Value = toml::from_str(&file_data).expect("no data");
         let error_value = Value::String("Not Found".to_string());
 
-        //return the requested field.
-        println!("{}", cfg_data.get(self.field.clone()).unwrap_or(&error_value));
+
+        if cfg_data.get(self.field.clone()).unwrap_or(&error_value) == &error_value{
+            return Err(friendly_message("That field was not found"))
+        } else {
+            //return the requested field.
+            println!("{}", cfg_data.get(self.field.clone()).unwrap());
+        }
 
         Ok(())
     }
