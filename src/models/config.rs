@@ -64,11 +64,14 @@ impl Config {
     /// # Errors
     ///
     /// Will error if base directory cannot be obtained AND path does not exist on passthru.
+    /// Will error if unable to create configuration directory.
     pub fn get_config_dir(&self) -> Result<PathBuf> {
         match &self.config_dir {
             Some(path) => Ok(path.clone()),
             None => {
                 let path = BaseDirectories::with_prefix(BASE_DIR_PREFIX)?;
+                // Create the directory if it doesn't exist
+                fs::create_dir_all(&path.get_config_home())?;
                 Ok(path.get_config_home())
             }
         }
