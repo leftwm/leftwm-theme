@@ -35,12 +35,12 @@ impl Current {
         let error_value = Value::String("Not Found".to_string());
 
         // check if the field exists if it doesn't return an error
-        if !(cfg_data.get(self.field.clone()).unwrap_or(&error_value) == &error_value) {
-            // return the requested field.
-            println!("{}", cfg_data.get(self.field.clone()).unwrap());
-        } else {
+        if (cfg_data.get(self.field.clone()).unwrap_or(&error_value) == &error_value) {
             // returning an error
             return Err(friendly_message("That field was not found"));
+        } else {
+            // return the requested field.
+            println!("{}", cfg_data.get(self.field.clone()).unwrap());
         }
 
         Ok(())
