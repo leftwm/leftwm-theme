@@ -26,7 +26,9 @@ use colored::Colorize;
 use errors::{LeftErrorKind, Result};
 
 use crate::models::Config;
-use crate::operations::{Apply, Install, List, New, Search, Status, Uninstall, Update, Upgrade, Current};
+use crate::operations::{
+    Apply, Current, Install, List, New, Search, Status, Uninstall, Update, Upgrade,
+};
 use clap::Clap;
 use log::error;
 use std::env;

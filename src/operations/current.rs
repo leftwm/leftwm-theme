@@ -1,25 +1,21 @@
-use crate::errors::friendly_message;
-use std::path::PathBuf;
-use crate::models::Config;
 use crate::errors;
+use crate::errors::friendly_message;
+use crate::models::Config;
 use clap::Clap;
-use toml::Value;
 use std::fs;
-
-
+use std::path::PathBuf;
+use toml::Value;
 
 #[derive(Clap, Debug)]
 pub struct Current {
     pub field: String,
 }
 
-
 impl Current {
     /// # Errors
     ///
     /// Will error if the requested field in not found in theme.toml
     pub fn exec(&self, config: &mut Config) -> Result<(), errors::LeftError> {
-
         // define directory so it can be used outside the scope of the loop
         let mut directory: PathBuf = PathBuf::new();
 
@@ -38,17 +34,15 @@ impl Current {
         // create a field to return if the requested field doesn't exist and to compare to.
         let error_value = Value::String("Not Found".to_string());
 
-
         // check if the field exists if it doesn't return an error
-        if !(cfg_data.get(self.field.clone()).unwrap_or(&error_value) == &error_value){
+        if !(cfg_data.get(self.field.clone()).unwrap_or(&error_value) == &error_value) {
             // return the requested field.
             println!("{}", cfg_data.get(self.field.clone()).unwrap());
         } else {
             // returning an error
-            return Err(friendly_message("That field was not found"))
+            return Err(friendly_message("That field was not found"));
         }
 
         Ok(())
     }
-
 }
