@@ -26,7 +26,7 @@ use colored::Colorize;
 use errors::{LeftErrorKind, Result};
 
 use crate::models::Config;
-use crate::operations::{Apply, Install, List, New, Search, Status, Uninstall, Update, Upgrade};
+use crate::operations::{Apply, Install, List, New, Search, Status, Uninstall, Update, Upgrade, Current};
 use clap::Clap;
 use log::error;
 use std::env;
@@ -65,6 +65,8 @@ pub enum Operation {
     Status(Status),
     /// Search for a theme by name
     Search(Search),
+    /// Get a field from the theme.toml
+    Current(Current),
 }
 
 fn main() {
@@ -93,6 +95,7 @@ fn main() {
         Operation::Upgrade(args) => Upgrade::exec(&args, &mut config),
         Operation::Update(args) => Update::exec(&args, &mut config),
         Operation::Search(args) => Search::exec(&args, &mut config),
+        Operation::Current(args) => Current::exec(&args, &mut config),
     };
 
     if let Err(e) = wrapper {

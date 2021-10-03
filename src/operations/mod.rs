@@ -8,6 +8,7 @@ mod status;
 mod uninstall;
 mod update;
 mod upgrade;
+mod current;
 
 pub use apply::Apply;
 //pub use autofind::AutoFind;
@@ -19,3 +20,4 @@ pub use status::Status;
 pub use uninstall::Uninstall;
 pub use update::Update;
 pub use upgrade::Upgrade;
+pub use current::Current;
