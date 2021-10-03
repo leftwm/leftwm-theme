@@ -15,6 +15,11 @@ impl Current {
     /// # Errors
     ///
     /// Will error if the requested field in not found in theme.toml
+    ///
+    /// # Panics
+    ///
+    /// Will panic if unable to retrieve value but file does exist.
+    /// Will panic if a current theme is set but directory is not set.
     pub fn exec(&self, config: &mut Config) -> Result<(), errors::LeftError> {
         // define directory so it can be used outside the scope of the loop
         let mut directory: PathBuf = PathBuf::new();
@@ -35,13 +40,17 @@ impl Current {
         let error_value = Value::String("Not Found".to_string());
 
         // check if the field exists if it doesn't return an error
-        if (cfg_data.get(self.field.clone()).unwrap_or(&error_value) == &error_value) {
+        if cfg_data.get(self.field.clone()).unwrap_or(&error_value) == &error_value {
             // returning an error
             return Err(friendly_message("That field was not found"));
-        } else {
-            // return the requested field.
-            println!("{}", cfg_data.get(self.field.clone()).unwrap());
         }
+        // return the requested field.
+        println!(
+            "{}",
+            cfg_data
+                .get(self.field.clone())
+                .expect("That field was not found")
+        );
 
         Ok(())
     }
