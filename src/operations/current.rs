@@ -32,17 +32,20 @@ impl Current {
             }
         }
 
-        //read the current theme.toml and define a value for the the requested field isnt found.
+        // read the current theme.toml
         let file_data: String = fs::read_to_string(directory).unwrap();
         let cfg_data: Value = toml::from_str(&file_data).expect("no data");
+        // create a field to return if the requested field doesn't exist and to compare to.
         let error_value = Value::String("Not Found".to_string());
 
 
-        if cfg_data.get(self.field.clone()).unwrap_or(&error_value) == &error_value{
-            return Err(friendly_message("That field was not found"))
-        } else {
-            //return the requested field.
+        // check if the field exists if it doesn't return an error
+        if !(cfg_data.get(self.field.clone()).unwrap_or(&error_value) == &error_value){
+            // return the requested field.
             println!("{}", cfg_data.get(self.field.clone()).unwrap());
+        } else {
+            // returning an error
+            return Err(friendly_message("That field was not found"))
         }
 
         Ok(())
