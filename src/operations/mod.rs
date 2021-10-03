@@ -1,5 +1,6 @@
 mod apply;
 //mod autofind;
+mod current;
 mod install;
 mod list;
 mod new;
@@ -11,6 +12,7 @@ mod upgrade;
 
 pub use apply::Apply;
 //pub use autofind::AutoFind;
+pub use current::Current;
 pub use install::Install;
 pub use list::List;
 pub use new::New;
