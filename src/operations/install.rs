@@ -2,14 +2,14 @@ use crate::errors::friendly_message;
 use crate::errors::Result;
 use crate::models::{Config, Theme};
 use crate::{errors, utils};
-use clap::Clap;
+use clap::Parser;
 use colored::Colorize;
 use git2::Repository;
 use log::{error, trace};
 use std::io;
 use std::io::Write;
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub struct Install {
     /// Read theme from git repository
     #[clap(short = 'g', long)]

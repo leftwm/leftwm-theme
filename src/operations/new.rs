@@ -1,7 +1,7 @@
 use crate::errors;
 use crate::models::{Config, Theme};
 use crate::utils::read::one;
-use clap::Clap;
+use clap::Parser;
 use colored::Colorize;
 use git2::Repository;
 use log::{error, trace};
@@ -11,7 +11,7 @@ use std::io::Write;
 use std::path::Path;
 use xdg::BaseDirectories;
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub struct New {
     pub name: String,
 }

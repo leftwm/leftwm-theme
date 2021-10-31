@@ -2,13 +2,13 @@ use crate::errors;
 use crate::errors::LeftError;
 use crate::models::{Config, Theme};
 use crate::utils::read::yes_or_no;
-use clap::Clap;
+use clap::Parser;
 use colored::Colorize;
 use log::error;
 use std::fs;
 use std::path::Path;
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub struct Uninstall {
     /// Name of theme to uninstall
     pub name: String,

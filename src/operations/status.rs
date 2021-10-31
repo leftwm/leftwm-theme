@@ -1,9 +1,9 @@
 use crate::errors;
 use crate::models::{Config, LeftWm};
-use clap::Clap;
+use clap::Parser;
 use colored::Colorize;
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub struct Status {
     /// Error if not set
     #[clap(short = 'e', long)]

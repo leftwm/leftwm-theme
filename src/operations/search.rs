@@ -1,6 +1,6 @@
 use crate::errors;
 use crate::models::Config;
-use clap::Clap;
+use clap::Parser;
 use colored::Colorize;
 use errors::LeftError;
 use fuzzy_matcher::skim::SkimMatcherV2;
@@ -9,7 +9,7 @@ use fuzzy_matcher::FuzzyMatcher;
 /* This function searches for themes, but does not update them by default
  *                     */
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub struct Search {
     /// Name of theme to find
     pub name: String,

@@ -1,12 +1,12 @@
 use crate::errors;
 use crate::models::Config;
-use clap::Clap;
+use clap::Parser;
 use colored::Colorize;
 use log::trace;
 use std::fs;
 use url::Url;
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub struct Update {
     /// Don't list themes
     #[clap(short = 'f', long)]

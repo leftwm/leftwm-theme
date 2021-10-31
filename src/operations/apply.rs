@@ -1,6 +1,6 @@
 use crate::models::{Config, Theme};
 use crate::{errors, utils};
-use clap::Clap;
+use clap::Parser;
 use colored::Colorize;
 use errors::LeftError;
 use log::{error, trace, warn};
@@ -16,7 +16,7 @@ use xdg::BaseDirectories;
      Possible optional args include debug, which prints all trace! commands, and no-reset, which prevents leftwm-theme from resetting the theme
 */
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub struct Apply {
     pub name: String,
 
