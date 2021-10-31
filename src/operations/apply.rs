@@ -37,7 +37,7 @@ impl Apply {
     /// Returns an error if symlink cannot be made.
     /// Returns an error if theme not found.
     /// Returns an error if leftwm-worker cannot be killed.
-    pub fn exec(&self, mut config: &mut Config) -> Result<(), errors::LeftError> {
+    pub fn exec(&self, config: &mut Config) -> Result<(), errors::LeftError> {
         trace!("Applying theme named {:?}", &self.name);
         println!(
             "{}{}{}",
@@ -49,7 +49,7 @@ impl Apply {
         dir.push("themes");
         dir.push("current");
         trace!("{:?}", &dir);
-        if let Some(theme) = Theme::find(&mut config, &self.name) {
+        if let Some(theme) = Theme::find(config, &self.name) {
             if let Some(theme_dir) = theme.directory.as_ref() {
                 //Do all necessary checks
                 if !checks(&theme) && !self.override_checks {
@@ -83,7 +83,7 @@ impl Apply {
                     }
                 }
                 if let Some(source) = theme.source {
-                    if let Some(target_theme) = Theme::find_mut(&mut config, &theme.name, &source) {
+                    if let Some(target_theme) = Theme::find_mut(config, &theme.name, &source) {
                         target_theme.current(true);
                     } else {
                         error!("Theme not found");

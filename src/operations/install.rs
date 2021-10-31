@@ -33,14 +33,14 @@ impl Install {
         println!("{}", "Looking for theme . . . ".bright_blue().bold());
         trace!("{:?}", &mut config);
 
-        let mut found = Theme::find_all(&mut config, &self.name)
+        let mut found = Theme::find_all(config, &self.name)
             .ok_or_else(|| friendly_message("Could not find theme"))?;
 
         //ask the user to pick a matching theme
-        let mut selected = choose_one(&mut found)?;
+        let selected = choose_one(&mut found)?;
 
         //install the selected theme
-        self.install_selected_theme(&mut selected, config)?;
+        self.install_selected_theme(selected, config)?;
 
         Ok(())
     }
@@ -71,15 +71,14 @@ impl Install {
     fn add_to_config_and_save(
         &self,
         theme: &mut Theme,
-        mut config: &mut Config,
+        config: &mut Config,
         dir: std::path::PathBuf,
     ) -> Result<()> {
         let not_in_db = || friendly_message("Theme not found in db");
 
         // update the directory info of theme entry in the config
         let source = theme.source.as_ref().ok_or_else(not_in_db)?;
-        let target_theme =
-            Theme::find_mut(&mut config, &self.name, source).ok_or_else(not_in_db)?;
+        let target_theme = Theme::find_mut(config, &self.name, source).ok_or_else(not_in_db)?;
         target_theme.directory = Some(dir);
         Config::save(config)?;
 
