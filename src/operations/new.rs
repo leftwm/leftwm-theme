@@ -1,7 +1,7 @@
 use crate::errors;
 use crate::models::{Config, Theme};
 use crate::utils::read::one;
-use clap::Clap;
+use clap::Parser;
 use colored::Colorize;
 use git2::Repository;
 use log::{error, trace};
@@ -11,7 +11,7 @@ use std::io::Write;
 use std::path::Path;
 use xdg::BaseDirectories;
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub struct New {
     pub name: String,
 }
@@ -23,10 +23,10 @@ impl New {
     /// Will send an error if theme has a `/`.
     /// Will error if a theme with same name already exists.
     /// Will error if config cannot be loaded or saved properly.
-    pub fn exec(&self, mut config: &mut Config) -> Result<(), errors::LeftError> {
+    pub fn exec(&self, config: &mut Config) -> Result<(), errors::LeftError> {
         New::validate_name(&self.name)?;
 
-        if let Some(_theme) = Theme::find(&mut config, &self.name) {
+        if let Some(_theme) = Theme::find(config, &self.name) {
             error!(
                 "\n{} could not be created because a theme with that name already exists",
                 &self.name,
@@ -40,7 +40,7 @@ impl New {
             match Repository::init(&dir) {
                 Ok(_repo) => {
                     Config::update_or_append(
-                        &mut config,
+                        config,
                         &Theme::new(&self.name, None, Some(dir.clone())),
                         (&String::from("localhost"), &String::from("LOCAL")),
                     );

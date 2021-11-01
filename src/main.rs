@@ -29,11 +29,11 @@ use crate::models::Config;
 use crate::operations::{
     Apply, Current, Install, List, New, Search, Status, Uninstall, Update, Upgrade,
 };
-use clap::Clap;
+use clap::Parser;
 use log::error;
 use std::env;
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(author, about, version)]
 pub struct Opt {
     /// Verbose mode (-v, -vv, -vvv, etc.)
@@ -44,7 +44,7 @@ pub struct Opt {
     pub operation: Operation,
 }
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub enum Operation {
     // /// Finds themes not installed by LeftWM-theme
     //AutoFind(AutoFind),

@@ -3,12 +3,12 @@
 // be nice to skip themes that do not need updates.
 use crate::errors;
 use crate::models::Config;
-use clap::Clap;
+use clap::Parser;
 use colored::Colorize;
 use git2::{Oid, Repository};
 use log::{error, trace};
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub struct Upgrade {
     /// Don't update db
     #[clap(short = 'i', long)]

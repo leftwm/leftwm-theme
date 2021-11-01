@@ -1,12 +1,12 @@
 use crate::errors;
 use crate::errors::friendly_message;
 use crate::models::Config;
-use clap::Clap;
+use clap::Parser;
 use std::fs;
 use std::path::PathBuf;
 use toml::Value;
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub struct Current {
     pub field: String,
 }
