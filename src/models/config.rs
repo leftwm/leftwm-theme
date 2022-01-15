@@ -98,6 +98,7 @@ impl Config {
                     // If there is one, update values
                     target_theme.repository = theme.repository.clone();
                     target_theme.description = theme.description.clone();
+                    target_theme.support_url = theme.support_url.clone();
                     target_theme.commit = theme.commit.clone();
                     target_theme.version = theme.version.clone();
                     target_theme.leftwm_versions = theme.leftwm_versions.clone();
@@ -267,6 +268,7 @@ impl Repo {
                 target_theme.commit = theme.commit.clone();
                 target_theme.version = theme.version.clone();
                 target_theme.leftwm_versions = theme.leftwm_versions.clone();
+                target_theme.support_url = theme.support_url.clone();
                 target_theme.set_relative_directory(theme.relative_directory.clone());
                 target_theme.dependencies = theme.dependencies.clone();
                 target_theme.directory = theme.directory.clone();
