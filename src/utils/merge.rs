@@ -81,7 +81,7 @@ fn do_fetch<'a>(
     }
 
     let fetch_head = repo.find_reference("FETCH_HEAD")?;
-    Ok(repo.reference_to_annotated_commit(&fetch_head)?)
+    repo.reference_to_annotated_commit(&fetch_head)
 }
 
 fn fast_forward(
@@ -154,43 +154,40 @@ fn normal_merge(
 fn do_merge<'a>(
     repo: &'a Repository,
     remote_branch: &str,
-    fetch_commit: git2::AnnotatedCommit<'a>,
+    fetch_commit: &git2::AnnotatedCommit<'a>,
 ) -> Result<(), git2::Error> {
     // 1. do a merge analysis
-    let analysis = repo.merge_analysis(&[&fetch_commit])?;
+    let analysis = repo.merge_analysis(&[fetch_commit])?;
 
     // 2. Do the appopriate merge
     if analysis.0.is_fast_forward() {
         trace!("Doing a fast forward");
         // do a fast forward
         let refname = format!("refs/heads/{}", remote_branch);
-        match repo.find_reference(&refname) {
-            Ok(mut r) => {
-                fast_forward(repo, &mut r, &fetch_commit)?;
-            }
-            Err(_) => {
-                // The branch doesn't exist so just set the reference to the
-                // commit directly. Usually this is because you are pulling
-                // into an empty repository.
-                repo.reference(
-                    &refname,
-                    fetch_commit.id(),
-                    true,
-                    &format!("        Setting {} to {}", remote_branch, fetch_commit.id()),
-                )?;
-                repo.set_head(&refname)?;
-                repo.checkout_head(Some(
-                    git2::build::CheckoutBuilder::default()
-                        .allow_conflicts(true)
-                        .conflict_style_merge(true)
-                        .force(),
-                ))?;
-            }
-        };
+        if let Ok(mut r) = repo.find_reference(&refname) {
+            fast_forward(repo, &mut r, fetch_commit)?;
+        } else {
+            // The branch doesn't exist so just set the reference to the
+            // commit directly. Usually this is because you are pulling
+            // into an empty repository.
+            repo.reference(
+                &refname,
+                fetch_commit.id(),
+                true,
+                &format!("        Setting {} to {}", remote_branch, fetch_commit.id()),
+            )?;
+            repo.set_head(&refname)?;
+            repo.checkout_head(Some(
+                git2::build::CheckoutBuilder::default()
+                    .allow_conflicts(true)
+                    .conflict_style_merge(true)
+                    .force(),
+            ))?;
+        }
     } else if analysis.0.is_normal() {
         // do a normal merge
         let head_commit = repo.reference_to_annotated_commit(&repo.head()?)?;
-        normal_merge(&repo, &head_commit, &fetch_commit)?;
+        normal_merge(repo, &head_commit, fetch_commit)?;
     } else {
         println!("{}", "        ->OK".bright_green().bold());
         trace!("Nothing to do...");
@@ -198,10 +195,14 @@ fn do_merge<'a>(
     Ok(())
 }
 
+/// Run git-pull and use optimal strategy
+///
+/// # Errors
+/// - See `git2` errors.
 pub fn run(args: &Args, repo: &Repository) -> Result<(), git2::Error> {
-    let remote_name = args.arg_remote.as_ref().map(|s| &s[..]).unwrap_or("origin");
-    let remote_branch = args.arg_branch.as_ref().map(|s| &s[..]).unwrap_or("master");
+    let remote_name = args.arg_remote.as_ref().map_or("origin", |s| &s[..]);
+    let remote_branch = args.arg_branch.as_ref().map_or("master", |s| &s[..]);
     let mut remote = repo.find_remote(remote_name)?;
-    let fetch_commit = do_fetch(&repo, &[remote_branch], &mut remote)?;
-    do_merge(&repo, &remote_branch, fetch_commit)
+    let fetch_commit = do_fetch(repo, &[remote_branch], &mut remote)?;
+    do_merge(repo, remote_branch, &fetch_commit)
 }
