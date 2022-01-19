@@ -1,6 +1,7 @@
 use crate::errors;
 use crate::errors::Result;
 use crate::models::theme::{TempThemes, Theme};
+use colored::Colorize;
 use log::{error, trace};
 use std::ffi::OsStr;
 use std::fs;
@@ -16,6 +17,7 @@ const CURRENT_DIR: &str = "current";
 const LOCAL_REPO_NAME: &str = "LOCAL";
 const COMMUNITY_REPO_NAME: &str = "community";
 const THEMES_CONFIG_FILENAME: &str = "themes.toml";
+pub const CURRENT_DEFINITIONS_VERSION: i16 = 0;
 
 /// Contains a vector of all global repositories.
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -29,6 +31,8 @@ pub struct Config {
 pub struct Repo {
     pub url: String,
     pub name: String,
+    #[serde(default)]
+    pub definitions_version: i16,
     pub themes: Vec<Theme>,
 }
 
@@ -47,11 +51,13 @@ impl Config {
         let community_repo = Repo {
                     url: String::from("https://raw.githubusercontent.com/leftwm/leftwm-community-themes/master/known.toml"),
                     name: String::from(COMMUNITY_REPO_NAME),
+                    definitions_version: 1,
                     themes: Vec::new()
                 };
         let local_repo = Repo {
             url: String::from("localhost"),
             name: String::from(LOCAL_REPO_NAME),
+            definitions_version: CURRENT_DEFINITIONS_VERSION,
             themes: Vec::new(),
         };
         self.repos.push(community_repo);
@@ -114,6 +120,7 @@ impl Config {
                 url: repo.0.clone(),
                 name: repo.1.clone(),
                 themes: Vec::new(),
+                definitions_version: CURRENT_DEFINITIONS_VERSION,
             });
             let lent = config.repos.len();
             config.repos[lent - 1].themes.push(theme.clone());
@@ -198,7 +205,10 @@ impl Config {
         }
 
         // Create TempThemes from the local themes.
-        let mut local_temp_themes = TempThemes { theme: vec![] };
+        let mut local_temp_themes = TempThemes {
+            theme: vec![],
+            definitions_version: CURRENT_DEFINITIONS_VERSION,
+        };
         let config_dir = self.get_config_dir()?;
         for lt in local_themes {
             let path = config_dir.clone().join(THEMES_DIR).join(&lt);
@@ -221,8 +231,17 @@ impl Config {
 impl Repo {
     /// # Errors
     ///
-    /// No errors should occur.
+    /// Returns an error if the definitions file is OOD.
     pub fn compare(&mut self, theme_wrap: TempThemes, config_dir: &Path) -> Result<&Repo> {
+        if self.definitions_version > CURRENT_DEFINITIONS_VERSION
+            || theme_wrap.definitions_version > CURRENT_DEFINITIONS_VERSION
+        {
+            println!("{}", "========== ERROR ==========".bold().red());
+            println!("REPOSITORY DEFINITION HAS INCREASED.");
+            println!("USUALLY THIS MEANS YOUR LEFTWM-THEME IS OUT OF DATE.");
+            println!("{}", "========== ERROR ==========".bold().red());
+            return Err(errors::LeftError::from("Definitions file out of date."));
+        }
         let themes = theme_wrap.theme;
         trace!("Comparing themes");
 
