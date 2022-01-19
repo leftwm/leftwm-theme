@@ -135,11 +135,13 @@ leftwm_versions = "*"
         let mut config: Config = Config {
             repos: vec![
                 Repo {
+                     definitions_version: crate::models::config::CURRENT_DEFINITIONS_VERSION,
                 url: String::from(local_file_url.as_str()),
                 name: String::from("test-repo"),
                 themes: Vec::new(),
                 },
                 Repo{
+                    definitions_version: crate::models::config::CURRENT_DEFINITIONS_VERSION,
                     url: String::from("https://raw.githubusercontent.com/leftwm/leftwm-community-themes/master/known.toml"),
                     name: String::from("community"),
                     themes: Vec::new(),
