@@ -17,7 +17,7 @@ const CURRENT_DIR: &str = "current";
 const LOCAL_REPO_NAME: &str = "LOCAL";
 const COMMUNITY_REPO_NAME: &str = "community";
 const THEMES_CONFIG_FILENAME: &str = "themes.toml";
-pub const CURRENT_DEFINITIONS_VERSION: i16 = 0;
+pub const CURRENT_DEFINITIONS_VERSION: i16 = 1;
 
 /// Contains a vector of all global repositories.
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
