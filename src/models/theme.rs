@@ -35,7 +35,18 @@ pub struct Theme {
 /// Contains a vector of themes used for processing.
 #[derive(Debug, Deserialize)]
 pub struct TempThemes {
+    #[serde(default)]
+    pub definitions_version: i16,
     pub theme: Vec<Theme>,
+}
+
+impl Default for TempThemes {
+    fn default() -> TempThemes {
+        TempThemes {
+            theme: vec![],
+            definitions_version: crate::models::config::CURRENT_DEFINITIONS_VERSION,
+        }
+    }
 }
 
 /// Contains information pertaining to a program dependency (name, required/optional, package).
