@@ -27,7 +27,7 @@ use errors::{LeftErrorKind, Result};
 
 use crate::models::Config;
 use crate::operations::{
-    Apply, Current, Install, List, New, Search, Status, Uninstall, Update, Upgrade,
+    Apply, Current, Install, List, New, Search, Status, Support, Uninstall, Update, Upgrade,
 };
 use clap::Parser;
 use log::error;
@@ -67,6 +67,8 @@ pub enum Operation {
     Status(Status),
     /// Search for a theme by name
     Search(Search),
+    /// Get support (xdg-open)
+    Support(Support),
     /// Get a field from the theme.toml
     Current(Current),
 }
@@ -97,6 +99,7 @@ fn main() {
         Operation::Upgrade(args) => Upgrade::exec(&args, &mut config),
         Operation::Update(args) => Update::exec(&args, &mut config),
         Operation::Search(args) => Search::exec(&args, &mut config),
+        Operation::Support(args) => Support::exec(&args, &mut config),
         Operation::Current(args) => Current::exec(&args, &mut config),
     };
 

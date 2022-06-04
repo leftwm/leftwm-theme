@@ -46,6 +46,7 @@ impl Config {
         }
     }
 
+    #[must_use]
     // Populates the Config with defaults and returns it.
     #[must_use]
     pub fn default(&mut self) -> Self {
@@ -105,6 +106,7 @@ impl Config {
                     // If there is one, update values
                     target_theme.repository = theme.repository.clone();
                     target_theme.description = theme.description.clone();
+                    target_theme.support_url = theme.support_url.clone();
                     target_theme.commit = theme.commit.clone();
                     target_theme.version = theme.version.clone();
                     target_theme.leftwm_versions = theme.leftwm_versions.clone();
@@ -287,6 +289,7 @@ impl Repo {
                 target_theme.commit = theme.commit.clone();
                 target_theme.version = theme.version.clone();
                 target_theme.leftwm_versions = theme.leftwm_versions.clone();
+                target_theme.support_url = theme.support_url.clone();
                 target_theme.set_relative_directory(theme.relative_directory.clone());
                 target_theme.dependencies = theme.dependencies.clone();
                 target_theme.directory = theme.directory.clone();
@@ -453,7 +456,7 @@ mod test {
         let dst = current.to_str().unwrap();
         assert!(unix_fs::symlink(src, dst).is_ok());
 
-        let result = Repo::current_theme(&tmpdir.path().to_path_buf());
+        let result = Repo::current_theme(tmpdir.path());
         assert_eq!(result.unwrap().unwrap(), "test-theme2");
     }
 
@@ -466,16 +469,14 @@ mod test {
         let current = themes_dir.join(CURRENT_DIR);
         assert!(fs::create_dir_all(&current).is_ok());
 
-        let result = Repo::current_theme(&tmpdir.path().to_path_buf());
+        let result = Repo::current_theme(tmpdir.path());
         assert!(result.unwrap().is_none());
     }
 
     #[test]
     fn test_current_theme_no_themes_dir() {
         let tmpdir = tempfile::tempdir().unwrap();
-        assert!(Repo::current_theme(&tmpdir.path().to_path_buf())
-            .unwrap()
-            .is_none());
+        assert!(Repo::current_theme(tmpdir.path()).unwrap().is_none());
     }
 
     #[test]
@@ -486,9 +487,7 @@ mod test {
         let theme2 = themes_dir.join("test-theme2");
         assert!(fs::create_dir_all(&theme1).is_ok());
         assert!(fs::create_dir_all(&theme2).is_ok());
-        assert!(Repo::current_theme(&tmpdir.path().to_path_buf())
-            .unwrap()
-            .is_none());
+        assert!(Repo::current_theme(tmpdir.path()).unwrap().is_none());
     }
 
     #[test]
@@ -501,9 +500,7 @@ mod test {
         let current_file = themes_dir.join(CURRENT_DIR);
         assert!(File::create(current_file).is_ok());
 
-        assert!(Repo::current_theme(&tmpdir.path().to_path_buf())
-            .unwrap()
-            .is_none());
+        assert!(Repo::current_theme(tmpdir.path()).unwrap().is_none());
     }
 
     #[test]

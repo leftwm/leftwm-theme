@@ -105,5 +105,10 @@ impl Upgrade {
 }
 
 pub(crate) fn fetch_origin_main(repo: &git2::Repository) -> Result<(), git2::Error> {
-    return repo.find_remote("origin")?.fetch(&["main"], None, None);
+    use crate::utils::merge::{run, Args};
+    let args = Args {
+        arg_remote: None,
+        arg_branch: None,
+    };
+    run(&args, repo)
 }
