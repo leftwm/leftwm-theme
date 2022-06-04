@@ -52,9 +52,12 @@ impl Apply {
         if let Some(theme) = Theme::find(config, &self.name) {
             if let Some(theme_dir) = theme.directory.as_ref() {
                 //Do all necessary checks
-                if !checks(&theme) && !self.override_checks {
+                let checks_data = checks(&theme);
+                if !checks_data && !self.override_checks {
                     error!("Not all prerequirements passed");
                     return Err(errors::LeftError::from("PreReqs"));
+                } else if !checks_data && self.override_checks {
+                    warn!("Installing theme despite errors");
                 }
                 let mut path = Path::new(theme_dir).to_path_buf();
                 if let Some(rel_dir) = theme.relative_directory() {
@@ -136,7 +139,7 @@ pub(crate) fn checks(theme: &Theme) -> bool {
     ) {
         true
     } else {
-        error!("This theme is incompatible with the installed version of LeftWM.");
+        error!("This theme is incompatible with the installed version of LeftWM. \n You may be able to recover this theme, see https://github.com/leftwm/leftwm/wiki/Diagnosing-Theme-Errors");
         false
     }
 }
