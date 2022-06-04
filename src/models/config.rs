@@ -47,7 +47,6 @@ impl Config {
     }
 
     // Populates the Config with defaults and returns it.
-    #[must_use]
     pub fn default(&mut self) -> Self {
         let community_repo = Repo {
                     url: String::from("https://raw.githubusercontent.com/leftwm/leftwm-community-themes/master/known.toml"),
