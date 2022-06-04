@@ -1,5 +1,5 @@
-use crate::errors;
 use crate::models::Config;
+use crate::{errors, utils};
 use clap::Parser;
 use colored::Colorize;
 use log::trace;
@@ -11,6 +11,9 @@ pub struct Update {
     /// Don't list themes
     #[clap(short = 'f', long)]
     pub no_list: bool,
+    /// List incompatible themes
+    #[clap(short = 'i', long)]
+    pub incompatible: bool,
 }
 
 impl Update {
@@ -43,17 +46,40 @@ impl Update {
                     Some(_) => "-Installed".red().bold(),
                     None => "".white(),
                 };
-                println!(
-                    "   {}{}/{}: {}{}",
-                    current,
-                    repo.name.bright_magenta().bold(),
-                    theme.name.bright_green().bold(),
-                    theme
-                        .description
-                        .as_ref()
-                        .unwrap_or(&"A LeftWM theme".to_string()),
-                    installed
-                );
+                // Only list installable themes
+                if let Ok(true) = utils::versions::check(
+                    &theme
+                        .leftwm_versions
+                        .clone()
+                        .unwrap_or_else(|| "*".to_string()),
+                ) {
+                    println!(
+                        "   {}{}/{}: {}{}",
+                        current,
+                        repo.name.bright_magenta().bold(),
+                        theme.name.bright_green().bold(),
+                        theme
+                            .description
+                            .as_ref()
+                            .unwrap_or(&"A LeftWM theme".to_string()),
+                        installed
+                    );
+                } else {
+                    // Show incompatible themes if requested
+                    if self.incompatible {
+                        println!(
+                            "   {}{}/{}: {}{} (not compatible with your version of leftwm)",
+                            current,
+                            repo.name.bright_magenta().bold(),
+                            theme.name.bright_red().bold(),
+                            theme
+                                .description
+                                .as_ref()
+                                .unwrap_or(&"A LeftWM theme".to_string()),
+                            installed
+                        );
+                    }
+                }
             }
         }
 

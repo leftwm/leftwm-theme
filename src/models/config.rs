@@ -47,6 +47,7 @@ impl Config {
     }
 
     // Populates the Config with defaults and returns it.
+    #[must_use]
     pub fn default(&mut self) -> Self {
         let community_repo = Repo {
                     url: String::from("https://raw.githubusercontent.com/leftwm/leftwm-community-themes/master/known.toml"),
@@ -246,8 +247,8 @@ impl Repo {
         trace!("Comparing themes");
 
         // Get a list of existing themes.
-        let existing_themes = Repo::installed_themes(&config_dir.to_path_buf())?;
-        let current_theme = Repo::current_theme(&config_dir.to_path_buf())?.unwrap_or_default();
+        let existing_themes = Repo::installed_themes(config_dir)?;
+        let current_theme = Repo::current_theme(config_dir)?.unwrap_or_default();
         let themes_dir = config_dir.join(THEMES_DIR);
 
         // Iterate over all the themes, and update/add if needed.
