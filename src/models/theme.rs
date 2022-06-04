@@ -26,6 +26,8 @@ pub struct Theme {
     pub dependencies: Option<Vec<DependencyL>>,
     /// Path to the directory containing up, down, and theme.toml w.r.t. root
     pub relative_directory: Option<String>,
+    /// URL to the help resources for this theme
+    pub support_url: Option<String>,
     #[serde(skip)]
     pub source: Option<String>,
 }
@@ -79,6 +81,7 @@ impl Theme {
             dependencies: None,
             current: Some(false),
             relative_directory: None,
+            support_url: None,
             source: None,
         }
     }
