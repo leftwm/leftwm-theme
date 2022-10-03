@@ -27,7 +27,8 @@ use errors::{LeftErrorKind, Result};
 
 use crate::models::Config;
 use crate::operations::{
-    Apply, Current, Install, List, New, Search, Status, Support, Uninstall, Update, Upgrade,
+    Apply, Current, Install, List, Migrate, New, Search, Status, Support, Uninstall, Update,
+    Upgrade,
 };
 use clap::Parser;
 use log::error;
@@ -55,6 +56,8 @@ pub enum Operation {
     /// List installed theme(s)
     #[clap(name = "list")]
     List(List),
+    /// Migrate `theme.toml` to `theme.ron`
+    Migrate(Migrate),
     /// Create new theme
     New(New),
     /// Update installed themes
@@ -95,6 +98,7 @@ fn main() {
         Operation::List(args) => List::exec(&args, &mut config),
         Operation::Apply(args) => Apply::exec(&args, &mut config),
         Operation::Status(args) => Status::exec(&args, &mut config),
+        Operation::Migrate(args) => Migrate::exec(&args),
         Operation::New(args) => New::exec(&args, &mut config),
         Operation::Upgrade(args) => Upgrade::exec(&args, &mut config),
         Operation::Update(args) => Update::exec(&args, &mut config),
