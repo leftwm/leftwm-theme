@@ -31,6 +31,13 @@ struct Theme {
     on_new_window_cmd: Option<String>,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+enum CustomMargins {
+    Int(u32),
+    // format: [top, right, bottom, left] as per HTML
+    Vec(Vec<u32>),
+}
+
 impl Migrate {
     /// # Errors
     ///
@@ -41,7 +48,7 @@ impl Migrate {
         trace!("Migrating theme named {:?}", &self.path);
         match migrate(&self.path) {
             Ok(_) => Ok(()),
-            Err(_) => return Err(LeftError::from("Failed to migrate theme.")),
+            Err(_) => Err(LeftError::from("Failed to migrate theme.")),
         }
     }
 }
@@ -57,15 +64,8 @@ fn migrate(path: &PathBuf) -> Result<(), LeftError> {
     ron_path.set_extension("ron");
     match write_to_file(&ron_path, &theme) {
         Ok(_) => Ok(()),
-        Err(_) => return Err(LeftError::from("Failed to write theme file.")),
+        Err(_) => Err(LeftError::from("Failed to write theme file.")),
     }
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
-pub enum CustomMargins {
-    Int(u32),
-    // format: [top, right, bottom, left] as per HTML
-    Vec(Vec<u32>),
 }
 
 fn write_to_file(ron_file: &PathBuf, theme: &Theme) -> Result<(), anyhow::Error> {
