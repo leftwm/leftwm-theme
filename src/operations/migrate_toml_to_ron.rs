@@ -9,6 +9,11 @@ use std::path::{Path, PathBuf};
 
 use crate::errors::LeftError;
 
+/* Thes function converts a `theme.toml` provided by the `path` arg
+   into a `theme.ron` at the same directory as the input file.
+    Required argument is the path to the file that should be converted.
+*/
+
 #[derive(Debug, Parser)]
 pub struct Migrate {
     pub path: PathBuf,
@@ -40,8 +45,7 @@ enum CustomMargins {
 impl Migrate {
     /// # Errors
     ///
-    /// Returns an error if config cannot be loaded / saved
-    /// Returns an error if `BaseDirectory` not set.
+    /// Returns an error if theme file cannot be loaded / saved
     /// Returns an error if theme not found.
     pub fn exec(&self) -> Result<(), LeftError> {
         trace!("Migrating theme named {:?}", &self.path);
