@@ -1,4 +1,3 @@
-use anyhow::Result;
 use clap::Parser;
 use leftwm_core::models::Gutter;
 use log::trace;
@@ -68,7 +67,7 @@ fn migrate(path: &PathBuf) -> Result<(), LeftError> {
     }
 }
 
-fn write_to_file(ron_file: &PathBuf, theme: &Theme) -> Result<(), anyhow::Error> {
+fn write_to_file(ron_file: &PathBuf, theme: &Theme) -> Result<(), LeftError> {
     let ron_pretty_conf = ron::ser::PrettyConfig::new()
         .depth_limit(2)
         .extensions(ron::extensions::Extensions::IMPLICIT_SOME);
@@ -78,7 +77,7 @@ fn write_to_file(ron_file: &PathBuf, theme: &Theme) -> Result<(), anyhow::Error>
     Ok(())
 }
 
-fn load_theme_file(path: impl AsRef<Path>) -> Result<Theme> {
+fn load_theme_file(path: impl AsRef<Path>) -> Result<Theme, LeftError> {
     let contents = fs::read_to_string(&path)?;
     let from_file: Theme = toml::from_str(&contents)?;
     Ok(from_file)

@@ -12,7 +12,6 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.48"
 clap = { version = "3.0.0-beta.4", features=["derive"] }
 colored = "2.0.0"
 dirs-next = "2.0.0"

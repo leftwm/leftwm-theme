@@ -30,6 +30,7 @@ pub enum LeftErrorKind {
     ParseIntError(core::num::ParseIntError),
     SemVerError(semver::Error),
     UrlParseError(url::ParseError),
+    RonError(ron::Error),
 }
 
 impl fmt::Display for LeftError {
@@ -56,6 +57,7 @@ impl fmt::Display for LeftErrorKind {
             LeftErrorKind::ParseIntError(ref err) => write!(f, "{}", err),
             LeftErrorKind::SemVerError(ref err) => write!(f, "{}", err),
             LeftErrorKind::UrlParseError(ref err) => write!(f, "{}", err),
+            LeftErrorKind::RonError(ref err) => write!(f, "{}", err),
         }
     }
 }
@@ -129,5 +131,11 @@ impl From<semver::Error> for LeftError {
 impl From<urlParseError> for LeftError {
     fn from(inner: urlParseError) -> LeftError {
         LeftErrorKind::UrlParseError(inner).into()
+    }
+}
+
+impl From<ron::Error> for LeftError {
+    fn from(inner: ron::Error) -> LeftError {
+        LeftErrorKind::RonError(inner).into()
     }
 }
