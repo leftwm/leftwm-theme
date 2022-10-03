@@ -99,7 +99,7 @@ impl Apply {
                 Config::save(config)?;
                 if !self.no_reset {
                     println!("{}", "Reloading LeftWM.".bright_blue().bold());
-                    Command::new("pkill").arg("leftwm-worker").output()?;
+                    Command::new("leftwm-command").arg("SoftReload").output()?;
                 }
                 Ok(())
             } else {
