@@ -1,6 +1,6 @@
 use anyhow::Result;
 use clap::Parser;
-use leftwm_core::models::{Gutter, Margins};
+use leftwm_core::models::Gutter;
 use log::trace;
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -16,19 +16,19 @@ pub struct Migrate {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
-pub struct Theme {
-    pub border_width: i32,
-    pub margin: CustomMargins,
-    pub workspace_margin: Option<CustomMargins>,
-    pub default_width: Option<i32>,
-    pub default_height: Option<i32>,
-    pub always_float: Option<bool>,
-    pub gutter: Option<Vec<Gutter>>,
-    pub default_border_color: String,
-    pub floating_border_color: String,
-    pub focused_border_color: String,
+struct Theme {
+    border_width: i32,
+    margin: CustomMargins,
+    workspace_margin: Option<CustomMargins>,
+    default_width: Option<i32>,
+    default_height: Option<i32>,
+    always_float: Option<bool>,
+    gutter: Option<Vec<Gutter>>,
+    default_border_color: String,
+    floating_border_color: String,
+    focused_border_color: String,
     #[serde(rename = "on_new_window")]
-    pub on_new_window_cmd: Option<String>,
+    on_new_window_cmd: Option<String>,
 }
 
 impl Migrate {
@@ -60,8 +60,8 @@ fn migrate(path: &PathBuf) -> Result<(), LeftError> {
         Err(_) => return Err(LeftError::from("Failed to write theme file.")),
     }
 }
+
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
-#[serde(untagged)]
 pub enum CustomMargins {
     Int(u32),
     // format: [top, right, bottom, left] as per HTML
@@ -82,27 +82,4 @@ fn load_theme_file(path: impl AsRef<Path>) -> Result<Theme> {
     let contents = fs::read_to_string(&path)?;
     let from_file: Theme = toml::from_str(&contents)?;
     Ok(from_file)
-}
-
-impl std::convert::TryFrom<CustomMargins> for Margins {
-    type Error = &'static str;
-
-    fn try_from(c: CustomMargins) -> Result<Self, Self::Error> {
-        match c {
-            CustomMargins::Int(size) => Ok(Self::new(size)),
-            CustomMargins::Vec(vec) => match vec.len() {
-                1 => Ok(Self::new(vec[0])),
-                2 => Ok(Self::new_from_pair(vec[0], vec[1])),
-                3 => Ok(Self::new_from_triple(vec[0], vec[1], vec[2])),
-                4 => Ok(Self {
-                    top: vec[0],
-                    right: vec[1],
-                    bottom: vec[2],
-                    left: vec[3],
-                }),
-                0 => Err("Empty margin or border array"),
-                _ => Err("Too many entries in margin or border array"),
-            },
-        }
-    }
 }
