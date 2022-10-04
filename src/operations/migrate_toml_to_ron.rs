@@ -36,6 +36,7 @@ struct Theme {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[serde(untagged)]
 enum CustomMargins {
     Int(u32),
     // format: [top, right, bottom, left] as per HTML
@@ -50,7 +51,7 @@ impl Migrate {
     pub fn exec(&self) -> Result<(), LeftError> {
         trace!("Migrating theme named {:?}", &self.path);
         match migrate(&self.path) {
-            Ok(_) => Ok(()),
+            Ok(()) => Ok(()),
             Err(_) => Err(LeftError::from("Failed to migrate theme.")),
         }
     }
@@ -66,7 +67,7 @@ fn migrate(path: &PathBuf) -> Result<(), LeftError> {
     let mut ron_path = path.clone();
     ron_path.set_extension("ron");
     match write_to_file(&ron_path, &theme) {
-        Ok(_) => Ok(()),
+        Ok(()) => Ok(()),
         Err(_) => Err(LeftError::from("Failed to write theme file.")),
     }
 }
