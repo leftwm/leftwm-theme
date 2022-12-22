@@ -78,7 +78,7 @@ impl Config {
             None => {
                 let path = BaseDirectories::with_prefix(BASE_DIR_PREFIX)?;
                 // Create the directory if it doesn't exist
-                fs::create_dir_all(&path.get_config_home())?;
+                fs::create_dir_all(path.get_config_home())?;
                 Ok(path.get_config_home())
             }
         }
@@ -92,7 +92,7 @@ impl Config {
     pub fn save(config: &Self) -> Result<&Config> {
         let config_filename = config.get_config_dir()?.join(THEMES_CONFIG_FILENAME);
         let toml = toml::to_string(&config)?;
-        let mut file = File::create(&config_filename)?;
+        let mut file = File::create(config_filename)?;
         file.write_all(toml.as_bytes())?;
         Ok(config)
     }
@@ -410,7 +410,7 @@ mod test {
         let theme1 = themes_dir.join("test-theme1");
         let theme2 = themes_dir.join("test-theme2");
         let unrelated_file = themes_dir.join("some-file");
-        assert!(fs::create_dir_all(&theme1).is_ok());
+        assert!(fs::create_dir_all(theme1).is_ok());
         assert!(fs::create_dir_all(&theme2).is_ok());
         assert!(File::create(unrelated_file).is_ok());
 
@@ -446,7 +446,7 @@ mod test {
         let themes_dir = tmpdir.path().join(THEMES_DIR);
         let theme1 = themes_dir.join("test-theme1");
         let theme2 = themes_dir.join("test-theme2");
-        assert!(fs::create_dir_all(&theme1).is_ok());
+        assert!(fs::create_dir_all(theme1).is_ok());
         assert!(fs::create_dir_all(&theme2).is_ok());
 
         // Create current theme as a symlink to an existing theme.
@@ -466,7 +466,7 @@ mod test {
 
         // Custom theme, not a symlink, not managed by leftwm-theme.
         let current = themes_dir.join(CURRENT_DIR);
-        assert!(fs::create_dir_all(&current).is_ok());
+        assert!(fs::create_dir_all(current).is_ok());
 
         let result = Repo::current_theme(tmpdir.path());
         assert!(result.unwrap().is_none());
@@ -484,8 +484,8 @@ mod test {
         let themes_dir = tmpdir.path().join(THEMES_DIR);
         let theme1 = themes_dir.join("test-theme1");
         let theme2 = themes_dir.join("test-theme2");
-        assert!(fs::create_dir_all(&theme1).is_ok());
-        assert!(fs::create_dir_all(&theme2).is_ok());
+        assert!(fs::create_dir_all(theme1).is_ok());
+        assert!(fs::create_dir_all(theme2).is_ok());
         assert!(Repo::current_theme(tmpdir.path()).unwrap().is_none());
     }
 
@@ -544,7 +544,7 @@ mod test {
         assert!(fs::create_dir_all(&comm_theme1).is_ok());
         assert!(fs::create_dir_all(&comm_theme2).is_ok());
         assert!(fs::create_dir_all(&local_theme1).is_ok());
-        assert!(fs::create_dir_all(&local_theme2).is_ok());
+        assert!(fs::create_dir_all(local_theme2).is_ok());
 
         // Set current theme symlink to a local theme.
         let current = themes_dir.join(CURRENT_DIR);

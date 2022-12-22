@@ -40,7 +40,7 @@ impl Current {
         // check if the field exists if it doesn't return an error
         if let Some(field_value) = cfg_data.get(self.field.clone()) {
             //return requested field
-            println!("{}", format!("{}", field_value).replace('\"', ""));
+            println!("{}", format!("{field_value}").replace('\"', ""));
             Ok(())
         } else {
             // returning an error

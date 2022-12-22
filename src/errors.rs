@@ -42,22 +42,22 @@ impl fmt::Display for LeftError {
 impl fmt::Display for LeftErrorKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            LeftErrorKind::SerdeParse(ref err) => write!(f, "{}", err),
+            LeftErrorKind::SerdeParse(ref err) => write!(f, "{err}"),
             LeftErrorKind::UserFriendlyError(ref err) | LeftErrorKind::Generic(ref err) => {
-                write!(f, "{}", err)
+                write!(f, "{err}")
             }
-            LeftErrorKind::IoError(ref err) => write!(f, "{}", err),
-            LeftErrorKind::XdgBaseDirError(ref err) => write!(f, "{}", err),
-            LeftErrorKind::TomlParse(ref err) => write!(f, "{}", err),
-            LeftErrorKind::TomlSerialize(ref err) => write!(f, "{}", err),
+            LeftErrorKind::IoError(ref err) => write!(f, "{err}"),
+            LeftErrorKind::XdgBaseDirError(ref err) => write!(f, "{err}"),
+            LeftErrorKind::TomlParse(ref err) => write!(f, "{err}"),
+            LeftErrorKind::TomlSerialize(ref err) => write!(f, "{err}"),
             LeftErrorKind::StreamError() => write!(f, "Stream Error"),
             LeftErrorKind::NoneError() => write!(f, "None Error"),
-            LeftErrorKind::ReqwestError(ref err) => write!(f, "Request Error: {}", err),
-            LeftErrorKind::GitError(ref err) => write!(f, "{}", err),
-            LeftErrorKind::ParseIntError(ref err) => write!(f, "{}", err),
-            LeftErrorKind::SemVerError(ref err) => write!(f, "{}", err),
-            LeftErrorKind::UrlParseError(ref err) => write!(f, "{}", err),
-            LeftErrorKind::RonError(ref err) => write!(f, "{}", err),
+            LeftErrorKind::ReqwestError(ref err) => write!(f, "Request Error: {err}"),
+            LeftErrorKind::GitError(ref err) => write!(f, "{err}"),
+            LeftErrorKind::ParseIntError(ref err) => write!(f, "{err}"),
+            LeftErrorKind::SemVerError(ref err) => write!(f, "{err}"),
+            LeftErrorKind::UrlParseError(ref err) => write!(f, "{err}"),
+            LeftErrorKind::RonError(ref err) => write!(f, "{err}"),
         }
     }
 }

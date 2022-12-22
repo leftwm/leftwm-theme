@@ -175,10 +175,10 @@ impl Theme {
         new_name: &str,
         config_dir: &Path,
     ) -> Result<(), errors::LeftError> {
-        let old_theme_dir = config_dir.join(THEMES_DIR).join(&old_name);
+        let old_theme_dir = config_dir.join(THEMES_DIR).join(old_name);
         if old_theme_dir.exists() {
-            println!("Moving theme {} to {}", old_name, new_name);
-            let new_theme_dir = config_dir.join(THEMES_DIR).join(&new_name);
+            println!("Moving theme {old_name} to {new_name}");
+            let new_theme_dir = config_dir.join(THEMES_DIR).join(new_name);
             fs::rename(old_theme_dir, new_theme_dir)?;
         }
         Ok(())
@@ -197,7 +197,7 @@ mod test {
         let new_theme_dir = themes_dir.join("theme-y");
 
         // Create old theme dir.
-        assert!(fs::create_dir_all(&old_theme_dir).is_ok());
+        assert!(fs::create_dir_all(old_theme_dir).is_ok());
 
         assert!(Theme::apply_change_rename_dir("theme-x", "theme-y", &tmpdir.into_path()).is_ok());
 

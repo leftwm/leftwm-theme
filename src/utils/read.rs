@@ -12,7 +12,7 @@ pub fn one() -> String {
 #[must_use]
 pub fn yes_or_no(question: &str) -> bool {
     let state = loop {
-        println!("    {}", question);
+        println!("    {question}");
         print!("{}", "yes/no =>".bright_yellow().bold());
         io::stdout().flush().unwrap_or_default();
         let state = one().trim().to_uppercase();
@@ -23,5 +23,5 @@ pub fn yes_or_no(question: &str) -> bool {
 
         println!("Please write either yes or no.");
     };
-    return matches!(state.as_str(), "YES");
+    matches!(state.as_str(), "YES")
 }

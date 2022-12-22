@@ -143,7 +143,7 @@ fn copy_files(dir: &str, left_path: &Path) -> Result<(), errors::LeftError> {
             let path = entry.path();
             trace!(
                 "{:?}",
-                std::fs::copy(&path, left_path.join(entry.file_name()))
+                std::fs::copy(path, left_path.join(entry.file_name()))
             );
         }
     } else {

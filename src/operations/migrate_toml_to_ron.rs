@@ -77,7 +77,7 @@ fn write_to_file(ron_file: &PathBuf, theme: &Theme) -> Result<(), LeftError> {
         .depth_limit(2)
         .extensions(ron::extensions::Extensions::IMPLICIT_SOME);
     let ron_theme = ron::ser::to_string_pretty(&theme, ron_pretty_conf)?;
-    let mut file = File::create(&ron_file)?;
+    let mut file = File::create(ron_file)?;
     file.write_all(ron_theme.as_bytes())?;
     Ok(())
 }
