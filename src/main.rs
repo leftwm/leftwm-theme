@@ -35,13 +35,13 @@ use log::error;
 use std::env;
 
 #[derive(Parser, Debug)]
-#[command(author, about, version)]
+#[clap(author, about, version)]
 pub struct Opt {
     /// Verbose mode (-v, -vv, -vvv, etc.)
-    #[arg(short, long)]
+    #[clap(short, long, parse(from_occurrences))]
     pub verbose: u8,
     /// Operation to be performed by the theme manager
-    #[command(subcommand)]
+    #[clap(subcommand)]
     pub operation: Operation,
 }
 
