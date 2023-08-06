@@ -26,10 +26,7 @@ impl Uninstall {
             "{}",
             "Looking for theme to uninstall . . . ".bright_blue().bold()
         );
-        let theme = match Theme::find_installed(config, &self.name) {
-            Some(target_theme) => target_theme,
-            None => return Err(LeftError::from("Theme not found")),
-        };
+        let Some(theme) = Theme::find_installed(config, &self.name) else { return Err(LeftError::from("Theme not found")) };
         if let Some(directory) = theme.directory {
             let path = Path::new(&directory);
             if self.noconfirm
