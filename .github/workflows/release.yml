@@ -1,0 +1,118 @@
+name: Upload release artifacts
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+
+jobs:
+  binaries:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            rust_target: x86_64-unknown-linux-musl
+            asset_name: action-validator_linux_amd64
+          - os: macos-latest
+            rust_target: x86_64-apple-darwin
+            asset_name: action-validator_darwin_amd64
+          - os: ubuntu-latest
+            rust_target: aarch64-unknown-linux-musl
+            asset_name: action-validator_linux_arm64
+          - os: macos-latest
+            rust_target: aarch64-apple-darwin
+            asset_name: action-validator_darwin_arm64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo
+            ~/.rustup
+            target/
+          key: ${{ runner.os }}-${{ steps.rust-install.outputs.cachekey }}-${{ matrix.rust_target }}-binary-release
+
+      - name: Install rust
+        id: rust-install
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_target }}
+
+      - name: Set Cargo.toml version
+        if: github.event_name == 'release'
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.ref }}
+        run: |
+          mv Cargo.toml Cargo.toml.orig
+          sed "s/0\\.0\\.0-git/${RELEASE_TAG##*\/v}/" Cargo.toml.orig >Cargo.toml
+          mv Cargo.lock Cargo.lock.orig
+          sed "s/0\\.0\\.0-git/${RELEASE_TAG##*\/v}/" Cargo.lock.orig >Cargo.lock
+
+      - name: Install cross-compile linker for aarch64-unknown-linux-musl
+        if: matrix.rust_target == 'aarch64-unknown-linux-musl'
+        run: |
+          sudo apt update
+          sudo apt install gcc-aarch64-linux-gnu
+
+      - name: Build
+        env:
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER: "/usr/bin/aarch64-linux-gnu-ld"
+        run: |
+          cargo +${{ steps.rust-install.outputs.name }} build --target ${{ matrix.rust_target }} --release --locked
+
+      - name: Upload
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref }}
+          file: target/${{ matrix.rust_target }}/release/leftwm-theme
+          asset_name: ${{ matrix.asset_name }}
+
+  crate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo
+            ~/.rustup
+            target/
+          key: ${{ runner.os }}-${{ steps.rust-install.outputs.cachekey }}-crate-release
+
+      - name: Install rust
+        id: rust-install
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Set Cargo.toml version
+        if: github.event_name == 'release'
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.ref }}
+        run: |
+          mv Cargo.toml Cargo.toml.orig
+          sed "s/0\\.0\\.0-git/${RELEASE_TAG##*\/v}/" Cargo.toml.orig >Cargo.toml
+          mv Cargo.lock Cargo.lock.orig
+          sed "s/0\\.0\\.0-git/${RELEASE_TAG##*\/v}/" Cargo.lock.orig >Cargo.lock
+
+      - name: Publish crate
+        if: github.event_name == 'release'
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+        run: |
+          cargo publish --allow-dirty
