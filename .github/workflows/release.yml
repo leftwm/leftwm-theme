@@ -11,17 +11,8 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            rust_target: x86_64-unknown-linux-musl
-            asset_name: action-validator_linux_amd64
-          - os: macos-latest
-            rust_target: x86_64-apple-darwin
-            asset_name: action-validator_darwin_amd64
-          - os: ubuntu-latest
-            rust_target: aarch64-unknown-linux-musl
-            asset_name: action-validator_linux_arm64
-          - os: macos-latest
-            rust_target: aarch64-apple-darwin
-            asset_name: action-validator_darwin_arm64
+            rust_target: x86_64-unknown-linux-gnu
+            asset_name: leftwm-theme_x86_64_linux_gnu
 
     runs-on: ${{ matrix.os }}
 
@@ -52,16 +43,22 @@ jobs:
         env:
           RELEASE_TAG: ${{ github.ref }}
         run: |
-          mv Cargo.toml Cargo.toml.orig
-          sed "s/0\\.0\\.0-git/${RELEASE_TAG##*\/v}/" Cargo.toml.orig >Cargo.toml
-          mv Cargo.lock Cargo.lock.orig
-          sed "s/0\\.0\\.0-git/${RELEASE_TAG##*\/v}/" Cargo.lock.orig >Cargo.lock
-
+          mv Cargo.toml Cargo.toml.origl2
+          sed "s/[0-9]*\\.[0-9]*\\.[0-9]*-git/${RELEASE_TAG##*\/v}/" Cargo.toml.origl2 > Cargo.toml
+          mv Cargo.lock Cargo.lock.origl2
+          sed "s/[0-9]*\\.[0-9]*\\.[0-9]*-git/${RELEASE_TAG##*\/v}/" Cargo.lock.origl2 > Cargo.lock
       - name: Install cross-compile linker for aarch64-unknown-linux-musl
         if: matrix.rust_target == 'aarch64-unknown-linux-musl'
         run: |
           sudo apt update
           sudo apt install gcc-aarch64-linux-gnu
+      - name: Install openssl
+        run: |
+          sudo apt update
+          sudo apt install openssl pkg-config libssl-dev
+          cargo clean
+          OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu" 
+          OPENSSL_INCLUDE_DIR="/usr/include/openssl"
 
       - name: Build
         env:
@@ -99,20 +96,27 @@ jobs:
         id: rust-install
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Install openssl
+        run: |
+          sudo apt update
+          sudo apt install openssl pkg-config libssl-dev
+          cargo clean
+          OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu" 
+          OPENSSL_INCLUDE_DIR="/usr/include/openssl"
+
       - name: Set Cargo.toml version
         if: github.event_name == 'release'
         shell: bash
         env:
           RELEASE_TAG: ${{ github.ref }}
         run: |
-          mv Cargo.toml Cargo.toml.orig
-          sed "s/0\\.0\\.0-git/${RELEASE_TAG##*\/v}/" Cargo.toml.orig >Cargo.toml
-          mv Cargo.lock Cargo.lock.orig
-          sed "s/0\\.0\\.0-git/${RELEASE_TAG##*\/v}/" Cargo.lock.orig >Cargo.lock
-
+          mv Cargo.toml Cargo.toml.origl2
+          sed "s/[0-9]*\\.[0-9]*\\.[0-9]*-git/${RELEASE_TAG##*\/v}/" Cargo.toml.origl2 > Cargo.toml
+          mv Cargo.lock Cargo.lock.origl2
+          sed "s/[0-9]*\\.[0-9]*\\.[0-9]*-git/${RELEASE_TAG##*\/v}/" Cargo.lock.origl2 > Cargo.lock
       - name: Publish crate
         if: github.event_name == 'release'
         env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
         run: |
           cargo publish --allow-dirty
