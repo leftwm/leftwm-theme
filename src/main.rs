@@ -38,7 +38,7 @@ use std::env;
 #[clap(author, about, version)]
 pub struct Opt {
     /// Verbose mode (-v, -vv, -vvv, etc.)
-    #[clap(short, long, parse(from_occurrences))]
+    #[clap(short, long, action = clap::ArgAction::Count)]
     pub verbose: u8,
     /// Operation to be performed by the theme manager
     #[clap(subcommand)]
