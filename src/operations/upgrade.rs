@@ -76,7 +76,7 @@ impl Upgrade {
                     );
                     let git_repo = Repository::open(theme_directory)?;
                     match fetch_origin_main(&git_repo) {
-                        Ok(_) => {
+                        Ok(()) => {
                             //if defined, attempt to checkout the specific index
                             if theme.commit.is_some()
                                 && theme.commit.clone().unwrap_or_default() != *"*"

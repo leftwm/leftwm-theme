@@ -59,8 +59,8 @@ impl Migrate {
 
 fn migrate(path: &PathBuf) -> Result<(), LeftError> {
     let Ok(theme) = load_theme_file(path) else {
-             return Err(LeftError::from("Theme not found"));
-         };
+        return Err(LeftError::from("Theme not found"));
+    };
     let mut ron_path = path.clone();
     ron_path.set_extension("ron");
     match write_to_file(&ron_path, &theme) {
