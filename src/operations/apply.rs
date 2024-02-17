@@ -65,7 +65,7 @@ impl Apply {
                 }
                 trace!("{:?}", &path);
                 match fs::remove_dir_all(&dir) {
-                    Ok(_) => {
+                    Ok(()) => {
                         warn!("Removed old current directory");
                     }
                     Err(_) => {

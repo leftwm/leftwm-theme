@@ -14,6 +14,9 @@ impl Support {
     /// # Errors
     ///
     /// Should not error.
+    ///
+    /// # Panics
+    /// May panic if xdg-open not found, or handler not set
     pub fn exec(&self, config: &mut Config) -> Result<(), errors::LeftError> {
         'outer: for repo in &config.repos {
             trace!("Searching themes from {}", &repo.name);
