@@ -21,18 +21,19 @@ pub struct Migrate {
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 struct Theme {
-    border_width: i32,
-    margin: CustomMargins,
-    workspace_margin: Option<CustomMargins>,
-    default_width: Option<i32>,
-    default_height: Option<i32>,
-    always_float: Option<bool>,
-    gutter: Option<Vec<Gutter>>,
-    default_border_color: String,
-    floating_border_color: String,
-    focused_border_color: String,
+    pub border_width: Option<i32>,
+    pub margin: Option<CustomMargins>,
+    pub workspace_margin: Option<CustomMargins>,
+    pub default_width: Option<i32>,
+    pub default_height: Option<i32>,
+    pub always_float: Option<bool>,
+    pub gutter: Option<Vec<Gutter>>,
+    pub default_border_color: Option<String>,
+    pub floating_border_color: Option<String>,
+    pub focused_border_color: Option<String>,
+    pub background_color: Option<String>,
     #[serde(rename = "on_new_window")]
-    on_new_window_cmd: Option<String>,
+    pub on_new_window_cmd: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
