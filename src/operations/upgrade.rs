@@ -88,7 +88,7 @@ impl Upgrade {
                             }
                         }
                         Err(e) => {
-                            trace!("Error: {:?}", e);
+                            trace!("Error: {e:?}");
                             error!("Could not fetch repo.");
                         }
                     }

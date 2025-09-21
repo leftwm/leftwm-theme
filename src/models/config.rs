@@ -73,17 +73,16 @@ impl Config {
     /// Will error if base directory cannot be obtained AND path does not exist on passthru.
     /// Will error if unable to create configuration directory.
     pub fn get_config_dir(&self) -> Result<PathBuf> {
-        match &self.config_dir {
-            Some(path) => Ok(path.clone()),
-            None => {
-                let path = BaseDirectories::with_prefix(BASE_DIR_PREFIX);
-                // Create the directory if it doesn't exist
-                match path.get_config_home() {
-                    Some(home_path) => Ok(fs::create_dir_all(&home_path).and(Ok(home_path))?),
-                    None => Err(LeftError::from(
-                        "Your home directory is not set. Try setting $HOME.",
-                    )),
-                }
+        if let Some(path) = &self.config_dir {
+            Ok(path.clone())
+        } else {
+            let path = BaseDirectories::with_prefix(BASE_DIR_PREFIX);
+            // Create the directory if it doesn't exist
+            match path.get_config_home() {
+                Some(home_path) => Ok(fs::create_dir_all(&home_path).and(Ok(home_path))?),
+                None => Err(LeftError::from(
+                    "Your home directory is not set. Try setting $HOME.",
+                )),
             }
         }
     }
@@ -107,13 +106,15 @@ impl Config {
             match target_repo.themes.iter_mut().find(|o| theme.name == o.name) {
                 Some(target_theme) => {
                     // If there is one, update values
-                    target_theme.repository = theme.repository.clone();
-                    target_theme.description = theme.description.clone();
-                    target_theme.support_url = theme.support_url.clone();
-                    target_theme.commit = theme.commit.clone();
-                    target_theme.version = theme.version.clone();
-                    target_theme.leftwm_versions = theme.leftwm_versions.clone();
-                    target_theme.dependencies = theme.dependencies.clone();
+                    target_theme.repository.clone_from(&theme.repository);
+                    target_theme.description.clone_from(&theme.description);
+                    target_theme.support_url.clone_from(&theme.support_url);
+                    target_theme.commit.clone_from(&theme.commit);
+                    target_theme.version.clone_from(&theme.version);
+                    target_theme
+                        .leftwm_versions
+                        .clone_from(&theme.leftwm_versions);
+                    target_theme.dependencies.clone_from(&theme.dependencies);
                 }
                 None => {
                     target_repo.themes.push(theme.clone());
@@ -160,7 +161,7 @@ impl Config {
             match toml::from_str::<Config>(&contents) {
                 Ok(config) => Ok(config),
                 Err(err) => {
-                    error!("TOML error: {:?}", err);
+                    error!("TOML error: {err:?}");
                     Err(errors::LeftError::from("TOML Invalid"))
                 }
             }
@@ -287,15 +288,17 @@ impl Repo {
         {
             Some(target_theme) => {
                 // If there is one, update values
-                target_theme.repository = theme.repository.clone();
-                target_theme.description = theme.description.clone();
-                target_theme.commit = theme.commit.clone();
-                target_theme.version = theme.version.clone();
-                target_theme.leftwm_versions = theme.leftwm_versions.clone();
-                target_theme.support_url = theme.support_url.clone();
+                target_theme.repository.clone_from(&theme.repository);
+                target_theme.description.clone_from(&theme.description);
+                target_theme.commit.clone_from(&theme.commit);
+                target_theme.version.clone_from(&theme.version);
+                target_theme
+                    .leftwm_versions
+                    .clone_from(&theme.leftwm_versions);
+                target_theme.support_url.clone_from(&theme.support_url);
                 target_theme.set_relative_directory(theme.relative_directory.clone());
-                target_theme.dependencies = theme.dependencies.clone();
-                target_theme.directory = theme.directory.clone();
+                target_theme.dependencies.clone_from(&theme.dependencies);
+                target_theme.directory.clone_from(&theme.directory);
             }
             // o/w insert a new leaf at the end
             None => {

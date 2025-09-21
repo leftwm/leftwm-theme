@@ -48,7 +48,7 @@ impl Apply {
         let mut dir = BaseDirectories::with_prefix("leftwm").create_config_directory("")?;
         dir.push("themes");
         dir.push("current");
-        trace!("{:?}", &dir);
+        trace!("{}", &dir.display());
         if let Some(theme) = Theme::find(config, &self.name) {
             if let Some(theme_dir) = theme.directory.as_ref() {
                 //Do all necessary checks
@@ -63,7 +63,7 @@ impl Apply {
                 if let Some(rel_dir) = theme.relative_directory() {
                     path.push(rel_dir);
                 }
-                trace!("{:?}", &path);
+                trace!("{}", &path.display());
                 match fs::remove_dir_all(&dir) {
                     Ok(()) => {
                         warn!("Removed old current directory");
@@ -145,7 +145,7 @@ pub(crate) fn checks(theme: &Theme) -> bool {
 }
 
 fn is_program_in_path(program: &str) -> bool {
-    trace!("Checking dependency {}", program);
+    trace!("Checking dependency {program}");
     if let Ok(path) = env::var("PATH") {
         for p in path.split(':') {
             let p_str = format!("{p}/{program}");

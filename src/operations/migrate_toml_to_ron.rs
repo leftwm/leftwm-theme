@@ -50,7 +50,7 @@ impl Migrate {
     /// Returns an error if theme file cannot be loaded / saved
     /// Returns an error if theme not found.
     pub fn exec(&self) -> Result<(), LeftError> {
-        trace!("Migrating theme named {:?}", &self.path);
+        trace!("Migrating theme named {}", &self.path.display());
         match migrate(&self.path) {
             Ok(()) => Ok(()),
             Err(_) => Err(LeftError::from("Failed to migrate theme.")),

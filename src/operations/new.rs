@@ -134,7 +134,7 @@ impl New {
 fn copy_files(dir: &str, left_path: &Path) -> Result<(), errors::LeftError> {
     trace!("{:?}", &dir);
     let directory = Path::new(dir);
-    trace!("{:?}", &directory);
+    trace!("{}", &directory.display());
     if directory.is_dir() {
         trace!("Directory Exists");
         for entry in std::fs::read_dir(directory)? {

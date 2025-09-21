@@ -23,10 +23,11 @@ impl Support {
             for theme in &repo.themes {
                 if theme.name == self.name {
                     if let Some(s_url) = &theme.support_url {
-                        Command::new("xdg-open")
+                        let _ = Command::new("xdg-open")
                             .arg(s_url)
                             .spawn()
-                            .expect("Could not xdg-open");
+                            .expect("Could not xdg-open")
+                            .wait();
                     } else {
                         println!("Theme does not have associated help page.");
                     }
