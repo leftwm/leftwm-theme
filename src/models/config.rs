@@ -1,5 +1,5 @@
 use crate::errors;
-use crate::errors::Result;
+use crate::errors::{LeftError, Result};
 use crate::models::theme::{TempThemes, Theme};
 use colored::Colorize;
 use log::{error, trace};
@@ -76,10 +76,14 @@ impl Config {
         match &self.config_dir {
             Some(path) => Ok(path.clone()),
             None => {
-                let path = BaseDirectories::with_prefix(BASE_DIR_PREFIX)?;
+                let path = BaseDirectories::with_prefix(BASE_DIR_PREFIX);
                 // Create the directory if it doesn't exist
-                fs::create_dir_all(path.get_config_home())?;
-                Ok(path.get_config_home())
+                match path.get_config_home() {
+                    Some(home_path) => Ok(fs::create_dir_all(&home_path).and(Ok(home_path))?),
+                    None => Err(LeftError::from(
+                        "Your home directory is not set. Try setting $HOME.",
+                    )),
+                }
             }
         }
     }

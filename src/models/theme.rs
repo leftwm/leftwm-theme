@@ -199,7 +199,7 @@ mod test {
         // Create old theme dir.
         assert!(fs::create_dir_all(old_theme_dir).is_ok());
 
-        assert!(Theme::apply_change_rename_dir("theme-x", "theme-y", &tmpdir.into_path()).is_ok());
+        assert!(Theme::apply_change_rename_dir("theme-x", "theme-y", &tmpdir.keep()).is_ok());
 
         // Check if the new dir exists.
         assert!(new_theme_dir.exists());
@@ -213,7 +213,7 @@ mod test {
 
         // No theme directory exists.
 
-        assert!(Theme::apply_change_rename_dir("theme-x", "theme-y", &tmpdir.into_path()).is_ok());
+        assert!(Theme::apply_change_rename_dir("theme-x", "theme-y", &tmpdir.keep()).is_ok());
         assert!(!new_theme_dir.exists());
     }
 }

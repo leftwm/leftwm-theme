@@ -34,7 +34,7 @@ impl New {
             Err(errors::LeftError::from("Theme not installed"))
         } else {
             //Create the new git in the leftwm directory
-            let mut dir = BaseDirectories::with_prefix("leftwm")?.create_config_directory("")?;
+            let mut dir = BaseDirectories::with_prefix("leftwm").create_config_directory("")?;
             dir.push("themes");
             dir.push(&self.name);
             match Repository::init(&dir) {

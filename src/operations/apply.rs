@@ -45,7 +45,7 @@ impl Apply {
             &self.name.bright_green().bold(),
             " as default theme.".bright_blue().bold()
         );
-        let mut dir = BaseDirectories::with_prefix("leftwm")?.create_config_directory("")?;
+        let mut dir = BaseDirectories::with_prefix("leftwm").create_config_directory("")?;
         dir.push("themes");
         dir.push("current");
         trace!("{:?}", &dir);
