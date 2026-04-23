@@ -50,11 +50,13 @@ impl Config {
     // Populates the Config with defaults and returns it.
     pub fn default(&mut self) -> Self {
         let community_repo = Repo {
-                    url: String::from("https://raw.githubusercontent.com/leftwm/leftwm-community-themes/master/known.toml"),
-                    name: String::from(COMMUNITY_REPO_NAME),
-                    definitions_version: 1,
-                    themes: Vec::new()
-                };
+            url: String::from(
+                "https://raw.githubusercontent.com/leftwm/leftwm-community-themes/master/known.toml",
+            ),
+            name: String::from(COMMUNITY_REPO_NAME),
+            definitions_version: 1,
+            themes: Vec::new(),
+        };
         let local_repo = Repo {
             url: String::from("localhost"),
             name: String::from(LOCAL_REPO_NAME),

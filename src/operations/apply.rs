@@ -139,7 +139,9 @@ pub(crate) fn checks(theme: &Theme) -> bool {
     ) {
         true
     } else {
-        error!("This theme is incompatible with the installed version of LeftWM. \n You may be able to recover this theme, see https://github.com/leftwm/leftwm/wiki/Diagnosing-Theme-Errors");
+        error!(
+            "This theme is incompatible with the installed version of LeftWM. \n You may be able to recover this theme, see https://github.com/leftwm/leftwm/wiki/Diagnosing-Theme-Errors"
+        );
         false
     }
 }

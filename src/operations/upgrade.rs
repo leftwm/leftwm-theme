@@ -78,13 +78,15 @@ impl Upgrade {
                     match fetch_origin_main(&git_repo) {
                         Ok(()) => {
                             //if defined, attempt to checkout the specific index
-                            if theme.commit.is_some()
-                                && theme.commit.clone().unwrap_or_default() != *"*"
-                            {
-                                git_repo.set_head_detached(Oid::from_str(
-                                    theme.commit.as_ref().unwrap(),
-                                )?)?;
-                                git_repo.checkout_head(None)?;
+                            match &theme.commit {
+                                Some(val) if val == &"*".to_string() => {}
+                                Some(_) => {
+                                    git_repo.set_head_detached(Oid::from_str(
+                                        theme.commit.as_ref().unwrap(),
+                                    )?)?;
+                                    git_repo.checkout_head(None)?;
+                                }
+                                None => {}
                             }
                         }
                         Err(e) => {

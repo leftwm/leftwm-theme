@@ -56,7 +56,9 @@ impl New {
                         "{}Which theme would you like to prefill?",
                         "::".bright_yellow().bold()
                     );
-                    print!("  [0] basic_lemonbar\n  [1] basic_polybar\n  [2] basic_xmobar\n  [3] None\n");
+                    print!(
+                        "  [0] basic_lemonbar\n  [1] basic_polybar\n  [2] basic_xmobar\n  [3] None\n"
+                    );
                     let state = loop {
                         print!("{}", "0-3 =>".bright_yellow().bold());
                         io::stdout().flush().unwrap_or_default();
