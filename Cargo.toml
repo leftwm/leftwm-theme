@@ -23,14 +23,14 @@ leftwm-core = "0.5"
 log = "0.4"
 pretty_env_logger = "0.5.0"
 regex = "1.5.4"
-reqwest = {version = "0.12.23", features= ["blocking", "json"]}
-ron = "0.11.0"
+reqwest = {version = "0.13.2", features= ["blocking", "json"]}
+ron = "0.12.1"
 semver = "1.0.1"
 serde = "1.0.104"
 serde_derive = "1.0.104"
 serde_json = "1.0.44"
 tempfile = "3.2.0"
-toml = "0.9.7"
+toml = "1.1.2"
 xdg = "3.0.0"
 url = "2.2.2"
 
